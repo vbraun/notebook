@@ -1,0 +1,7 @@
+*~
+.\#*
+\#*\#
+sage/
+bin/python
+doc/_build
+__pycache__
