@@ -708,15 +708,15 @@ Public License instead of this License.  But first, please read
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="main_window">
+  <object class="GtkWindow" id="notebook_window">
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkBox" id="main_box">
+      <object class="GtkBox" id="notebook_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkMenuBar" id="main_menubar">
+          <object class="GtkMenuBar" id="notebook_menubar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -873,7 +873,7 @@ Public License instead of this License.  But first, please read
           </packing>
         </child>
         <child>
-          <object class="GtkToolbar" id="main_toolbar">
+          <object class="GtkToolbar" id="notebook_toolbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -910,7 +910,7 @@ Public License instead of this License.  But first, please read
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
+          <object class="GtkScrolledWindow" id="notebook_scroller">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="vscrollbar_policy">always</property>
@@ -926,7 +926,7 @@ Public License instead of this License.  But first, please read
           </packing>
         </child>
         <child>
-          <object class="GtkStatusbar" id="main_statusbar">
+          <object class="GtkStatusbar" id="notebook_statusbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>

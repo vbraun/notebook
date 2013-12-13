@@ -71,7 +71,7 @@ def debug_shell_gtk(app):
 def launch_gtk(debug=False):
     check_gtk_prerequisites()
     from sage_notebook.app import Application
-    app = Application()
+    app = Application('gtk')
     if debug:
         debug_shell_gtk(app)
     else:

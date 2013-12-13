@@ -1,10 +1,5 @@
 """
-The Application
-
-The application class is basically just a container to hold
-Model/View/Presenter. There is only one instance. On the debug REPL
-(if you start with the ``--debug`` option) it is assigned to the
-variable ``app`` in the global namespace.
+A read-only cached version of @property
 """
 
 ##############################################################################
@@ -26,24 +21,17 @@ variable ``app`` in the global namespace.
 ##############################################################################
 
 
-from sage_notebook.presenter import Presenter
-from sage_notebook.model.model import Model
 
+class cached_property(object):
 
+    def __init__(self, method, name=None):
+        self.method = method
+        self.name = name or method.__name__
+        self.__doc__ = method.__doc__
 
-
-class Application(object):
-
-    def __init__(self, view_backend):
-        if view_backend == 'gtk':
-            from sage_notebook.view.view_gtk import ViewGtk as View
-        elif view_backend == 'http':
-            from sage_notebook.view.view_http import ViewHttp as View
-        elif view_backend == 'text':
-            from sage_notebook.view.view_text import ViewText as View
-        self.presenter = Presenter(View, Model)
-        self.view = self.presenter.view
-        self.model = self.presenter.model
-
-
-
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        result = self.method(instance)
+        setattr(instance, self.name, result)
+        return result
