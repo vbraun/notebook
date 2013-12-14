@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glade-catalog 
+    name="sage_notebook"
+    library="gladepython">
+
+  <init-function>glade_python_init</init-function>
+
+  <glade-widget-classes>
+    <glade-widget-class 
+	title="Sage Commandline" 
+	name="TerminalWidget"
+	generic-name="terminal_widget"/>
+  </glade-widget-classes>
+  
+
+  <glade-widget-group 
+      name="python" 
+      title="Sage Widgets">
+    <glade-widget-class-ref 
+	name="TerminalWidget"/>
+  </glade-widget-group>
+
+</glade-catalog>

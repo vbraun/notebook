@@ -1,5 +1,5 @@
 """
-The Data Model and Backend
+Command line widget
 """
 
 ##############################################################################
@@ -20,21 +20,36 @@ The Data Model and Backend
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
+import os
 
-import logging
-
-
-from .config import Config
+from gi.repository import GLib, Gdk, Gtk, Vte
 
 
+class TerminalWidget(Vte.Terminal):
+    __gtype_name__ = 'TerminalWidget'
+    __gsignals__ = {
+        #"expose_event": "override"
+        'char_size_changed': 'override',
+        }
+ 
+    def __init__(self):
+        Vte.Terminal.__init__(self)
 
-class Model:
-    
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
+    def fork_command(self, executable):
+        self.set_color_background(Gdk.color_parse('white'))
+        self.set_color_foreground(Gdk.color_parse('black'))
+        return self.fork_command_full(
+            Vte.PtyFlags.DEFAULT,
+            os.environ['HOME'],
+            [executable],
+            [],
+            GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+            None,
+            None,
+        )
 
-    def terminate(self):
-        # save
-        pass
+    def do_char_size_changed(self, width, height):
+        self.set_size_request(80*width, -1)
+
+
+

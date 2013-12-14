@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-The Data Model and Backend
+Add our custom widgets to glade3
 """
 
 ##############################################################################
@@ -21,20 +23,21 @@ The Data Model and Backend
 ##############################################################################
 
 
-import logging
+import os
+import sys
 
 
-from .config import Config
+print('Importing Sage Notebook widgets')
+
+gui_path = os.path.split(os.path.split(__file__)[0])[0]
+sys.path.append(gui_path)
+sage_notebook_path = os.path.split(os.path.split(gui_path)[0])[0]
+sys.path.append(sage_notebook_path)
+
+for p in sys.path:
+    print(p)
+
+from cell_widget import CellWidget
 
 
 
-class Model:
-    
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
-
-    def terminate(self):
-        # save
-        pass

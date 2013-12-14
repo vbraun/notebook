@@ -1,5 +1,8 @@
 """
-The Data Model and Backend
+About Window
+
+The about dialog is not necessarily modal, so we call it "About
+Window" in the following to stress that it is a separate window.
 """
 
 ##############################################################################
@@ -19,22 +22,9 @@ The Data Model and Backend
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
+ 
+from .window import WindowABC
 
 
-import logging
-
-
-from .config import Config
-
-
-
-class Model:
-    
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
-
-    def terminate(self):
-        # save
-        pass
+class AboutWindowABC(WindowABC):
+    pass

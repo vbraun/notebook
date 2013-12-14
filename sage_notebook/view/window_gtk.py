@@ -28,12 +28,9 @@ from .window import WindowABC, ModalDialogABC
 
 class WindowGtk(WindowABC):
 
-    def __init__(self, builder, name):
-        self._name = name
+    def __init__(self, name, presenter, builder):
+        super().__init__(name, presenter)
         self.window = builder.get_object(name)
-
-    def name(self):
-        return self._name
 
     def save_geometry(self):
         x, y = self.window.get_size()

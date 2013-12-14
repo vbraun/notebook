@@ -16,8 +16,8 @@ if [ -f "$CATALOG_DTD" ] ; then
     xmllint --dtdvalid "$CATALOG_DTD" --noout sage_notebook/view/gtk/worksheet.xml
 fi
 
-export GLADE_CATALOG_SEARCH_PATH=$rootdir/sage_notebook/view/gtk/glade
-export GLADE_MODULE_SEARCH_PATH=$rootdir/sage_notebook/view/gtk/glade
+export GLADE_CATALOG_SEARCH_PATH=$rootdir/sage_notebook/view/gtk
+export GLADE_MODULE_SEARCH_PATH=$rootdir/sage_notebook/view/gtk
 
 echo "GLADE_CATALOG_SEARCH_PATH=$GLADE_CATALOG_SEARCH_PATH"
 echo "GLADE_MODULE_SEARCH_PATH=$GLADE_MODULE_SEARCH_PATH"

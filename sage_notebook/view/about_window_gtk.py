@@ -1,5 +1,7 @@
 """
-The Data Model and Backend
+About Window
+
+This is the GTK3 implementation of :mod:`about_window`
 """
 
 ##############################################################################
@@ -19,22 +21,19 @@ The Data Model and Backend
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
+ 
+from .about_window import AboutWindowABC
+from .window_gtk import WindowGtk
 
 
-import logging
+class AboutWindowGtk(AboutWindowABC, WindowGtk):
 
+    def __init__(self, presenter, make_builder):
+        WINDOW = 'about_window'
+        builder = make_builder(WINDOW)
+        WindowGtk.__init__(self, WINDOW, presenter, builder=builder)
+        builder.connect_signals(self)
 
-from .config import Config
+    def on_about_window_response(self, widget, data=None):
+        self.presenter.hide_about_window()
 
-
-
-class Model:
-    
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
-
-    def terminate(self):
-        # save
-        pass

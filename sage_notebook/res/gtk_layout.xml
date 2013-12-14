@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.6 -->
-  <object class="GtkAboutDialog" id="aboutdialog">
+  <object class="GtkAboutDialog" id="about_window">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
+    <property name="resizable">False</property>
+    <property name="icon">icons/sage.svg</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Sage Notebook</property>
     <property name="version">1.0</property>
@@ -685,16 +687,16 @@ Public License instead of this License.  But first, please read
 &lt;http://www.gnu.org/philosophy/why-not-lgpl.html&gt;.
 </property>
     <property name="authors">Volker Braun</property>
-    <property name="logo">sage-banner.png</property>
-    <property name="logo_icon_name">Sage Logo</property>
+    <property name="logo">pixmaps/sage-banner.png</property>
     <property name="license_type">gpl-3-0</property>
+    <signal name="response" handler="on_about_window_response" swapped="no"/>
     <child internal-child="vbox">
-      <object class="GtkBox" id="aboutdialog_box">
+      <object class="GtkBox" id="about_box">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
-          <object class="GtkButtonBox" id="aboutdialog-action_area1">
+          <object class="GtkButtonBox" id="about_action_area">
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
           </object>
@@ -710,6 +712,10 @@ Public License instead of this License.  But first, please read
   </object>
   <object class="GtkWindow" id="notebook_window">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Sage Notebook</property>
+    <property name="icon">icons/sage.svg</property>
+    <signal name="destroy" handler="on_notebook_window_destroy" swapped="no"/>
+    <signal name="delete-event" handler="on_notebook_window_delete_event" swapped="no"/>
     <child>
       <object class="GtkBox" id="notebook_box">
         <property name="visible">True</property>
@@ -720,49 +726,53 @@ Public License instead of this License.  But first, please read
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkMenuItem" id="menuitem1">
+              <object class="GtkMenuItem" id="notebook_menubar_file">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu1">
+                  <object class="GtkMenu" id="notebook_submenu_file">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem1">
+                      <object class="GtkImageMenuItem" id="notebook_menu_new">
                         <property name="label">gtk-new</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_new_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem2">
+                      <object class="GtkImageMenuItem" id="notebook_menu_open">
                         <property name="label">gtk-open</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_open_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem3">
+                      <object class="GtkImageMenuItem" id="notebook_menu_save">
                         <property name="label">gtk-save</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_save_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem4">
+                      <object class="GtkImageMenuItem" id="notebook_menu_saveas">
                         <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_saveas_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -772,12 +782,13 @@ Public License instead of this License.  But first, please read
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem5">
+                      <object class="GtkImageMenuItem" id="notebook_menu_quit">
                         <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_quit_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -843,22 +854,23 @@ Public License instead of this License.  But first, please read
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem4">
+              <object class="GtkMenuItem" id="notebook_menubar_help">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu3">
+                  <object class="GtkMenu" id="notebook_submenu_help">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
+                      <object class="GtkImageMenuItem" id="notebook_menu_about">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_notebook_menu_about_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -910,13 +922,68 @@ Public License instead of this License.  But first, please read
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="notebook_scroller">
+          <object class="GtkPaned" id="notebook_paned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="vscrollbar_policy">always</property>
-            <property name="shadow_type">in</property>
             <child>
-              <placeholder/>
+              <object class="GtkToolPalette" id="notebook_toolpalette">
+                <property name="width_request">20</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="toolbar_style">both-horiz</property>
+                <child>
+                  <object class="GtkToolItemGroup" id="notebook_toolitemgroup">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">File</property>
+                    <child>
+                      <object class="GtkToolButton" id="notebook_toolbutton_new">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">New</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-new</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="notebook_toolbutton_save">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Save</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-save</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="notebook_scroller">
+                <property name="width_request">600</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="vscrollbar_policy">always</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">False</property>
+              </packing>
             </child>
           </object>
           <packing>

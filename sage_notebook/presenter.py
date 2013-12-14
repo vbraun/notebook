@@ -39,20 +39,19 @@ class Presenter(object):
         #else:
         #    self.show_notebook_window()
  
-    @property
     def save_geometry(self):
         geometry = self.model.config.window_geometry
         geometry.update(self.view.get_geometry())
-    
-    @save_geometry.setter
-    def restore_geometry(self):
-        self.view.restore_geometry(self.model.config.window_geometry)
+        self.model.config.window_geometry = geometry
+
+    def get_saved_geometry(self, name):
+        return self.model.config.window_geometry.get(name, {})
 
     def terminate(self):
         """
         Quit the program
         """
-        self.view.save_geometry()
+        self.save_geometry()
         self.view.terminate()
         self.model.terminate()
 
@@ -68,15 +67,23 @@ class Presenter(object):
             self.terminate()
 
     ###################################################################
-    # The about dialog
+    # The about window
 
-    def show_about_dialog(self):
-        self.view.about_dialog.show()
+    def show_about_window(self):
+        self.view.show_about_window()
 
-    def hide_about_dialog(self):
-        self.view.about_dialog.hide()
+    def hide_about_window(self):
+        self.view.hide_about_window()
         if self.view.current_window is None:
             self.terminate()
+
+    ###################################################################
+    # Common for all modal dialogs
+
+    def destroy_modal_dialog(self):
+        self.view.destroy_modal_dialog()
+        if not self.view.current_window is None:
+            self.terminate() 
 
     ###################################################################
     # Misc. notification dialog (modal)
@@ -84,11 +91,6 @@ class Presenter(object):
     def show_notification(self, parent, text):
         self.view.new_notification_dialog(parent, text).show()
 
-    def destroy_modal_dialog(self):
-        self.view.destroy_modal_dialog()
-        if not self.view.have_open_window():
-            self.terminate()
- 
     ###################################################################
     # Error dialog (modal)
 

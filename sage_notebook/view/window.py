@@ -26,13 +26,24 @@ Base Class for Windows
 
 class WindowABC(object):
 
-    def __init__(self, object_id):
+    def __init__(self, name, presenter):
         """
         INPUT:
         
-        - ``object_id`` -- anything that identifies the window
+        - ``name`` -- anything that identifies the window
         """
-        self._object_id = object_id
+        self._name = name
+        self._presenter = presenter
+
+    @property
+    def presenter(self):
+        return self._presenter
+
+    def name(self):
+        return self._name
+
+    def __repr__(self):
+        return 'Window "{0}"'.format(self.name())
 
     def get_geometry(self):
         """
@@ -80,15 +91,15 @@ class WindowABC(object):
 
 class ModalDialogABC(WindowABC):
 
-    def __init__(self, parent_window, object_id):
+    def __init__(self, parent_window, name):
         """
         INPUT:
         
          - ``parent_window`` -- A :class:`Window` instance. The dialog
           is displayed on top of its parent.
 
-        - ``object_id`` -- anything that identifies the window
+        - ``name`` -- anything that identifies the window.
         """
-        super().__init__(object_id)
+        super().__init__(name)
 
     

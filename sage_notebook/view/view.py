@@ -33,7 +33,7 @@ dialogs. They are treated slighty differently:
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
-
+from .window import WindowABC
 
 
 class ViewABC(object):
@@ -54,13 +54,45 @@ class ViewABC(object):
             geometry[window.name()] = window.get_geometry()
         return geometry
 
-    def restore_geometry(self, geometry):
-        for window in self._open_windows:
-            try:
-                window_geometry = geometry[window.name()]
-            except KeyError:
-                continue
-            window.restore_geometry(window_geometry)
+    def _add_window(self, window):
+        assert isinstance(window, WindowABC)
+        self._open_windows.add(window)
+        self._current_window = window
+
+    def _show_window(self, window):
+        """
+        Show the window.
+
+        This adds the window to the set of open windows and puts it
+        into the foreground.
+
+        INPUT:
+
+        - ``window`` -- an instance of
+          :class:`~sage_notebook.view.window.WindowABC`.
+        """
+        assert isinstance(window, WindowABC)
+        self._open_windows.add(window)
+        self._current_window = window
+        window.present()
+
+    def _hide_window(self, window):
+        """
+        Hide the window.
+
+        INPUT:
+
+        - ``window`` -- an instance of
+          :class:`~sage_notebook.view.window.WindowABC`.
+        """
+        assert isinstance(window, WindowABC)
+        window.hide()
+        self._open_windows.remove(window)
+        try:
+            self._current_window = next(iter(self._open_windows))
+            self._current_window.present()
+        except StopIteration:
+            self._current_window = None
         
     @property
     def current_window(self):
@@ -70,12 +102,32 @@ class ViewABC(object):
     def current_dialog(self):
         return self._current_dialog
 
+
+    ###################################################################
+    # To be implemented in derived classes
+
     @property
     def resource_dir(self):
         raise NotImplemented
 
     def terminate(self):
-        raise NotImplemented
+        pass
+
+        
+    ###################################################################
+    # The About Dialog (which need not be modal, so we call it "About Window")
+
+    @property
+    def about_window(self):
+        raise NotImplementedError
+        
+    def show_about_window(self):
+        about = self.about_window
+        self._show_window(about)
+
+    def hide_about_window(self):
+        about = self.about_window
+        self._hide_window(about)
 
         
     ###################################################################
@@ -87,11 +139,9 @@ class ViewABC(object):
         
     def show_notebook_window(self):
         nb = self.notebook_window
-        self._open_windows.add(nb)
-        self._current_window = nb
-        nb.present()
+        self._show_window(nb)
 
     def hide_notebook_window(self):
         nb = self.notebook_window
-        nb.hide()
-        self._open_windows.remove(nb)
+        self._hide_window(nb)
+        
