@@ -44,19 +44,29 @@ NOTEBOOK_STYLE_CSS = """
     border-radius: 0;
     border-style: solid;
     border-width: 0;
+    font-size: 400%;
 }}
 
 #{title}:focused {{
 }}
 
-#{cells} GtkBox  {{
-    border-style: solid;
-    border-width: 3px;
+#{description} {{
+    font-size: 50%;
 }}
+
+#{cells} *  {{
+    color: black;
+    background: white;
+}}
+
+CellWidget * {{
+}}
+
 
 """.format(
     window=WINDOW, 
     title=TITLE, 
+    description=DESCRIPTION_VIEW,
     cells=CELLS
 ).encode('utf-8')
 
@@ -87,33 +97,28 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
     def _init_title(self, title):
         self.title = title
         title.set_name(TITLE)
-        font_description = Pango.FontDescription('Lucida Sans 48')
-        title.modify_font(font_description)
+        #font_description = Pango.FontDescription('Lucida Sans 48')
+        #title.modify_font(font_description)
 
     def _init_description(self, view, model):        
         self.desc_view = view
         self.desc_model = model
         font_description = Pango.FontDescription('Lucida Sans 10')
         view.modify_font(font_description)
+        view.set_border_window_size(Gtk.TextWindowType.BOTTOM, 10)
 
 
     def _init_cells(self, cells):
         self.cells = cells
         cells.set_name(CELLS)
         expand = False
-        fill = False
+        fill = True
         c = CellWidget()
-        c.show()
         cells.pack_start(c, expand, fill, 0)
         c = CellWidget()
-        c.show()
         cells.pack_start(c, expand, fill, 0)
         
-        #cells.pack_start(c,
-        c.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(0.0,1.0,1.0,1.0))
-        cells.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(0.0,1.0,1.0,1.0))
-
-
+        cells.show_all()
 
 
     def on_notebook_window_delete_event(self, widget, data=None):
