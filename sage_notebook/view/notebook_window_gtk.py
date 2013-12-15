@@ -26,20 +26,95 @@ This is the GTK3 implementation of :mod:`notebook_window`
 import logging
 
 from gi.repository import Gdk, Gtk, Pango
-from gi.repository import GtkSource
 
 from .window_gtk import WindowGtk
 from .notebook_window import NotebookWindowABC
+from .gtk.cell_widget import CellWidget
+
+# background-color: rgba (0,0,0,1); 
+
+WINDOW = 'notebook_window'
+TITLE = 'notebook_title'
+DESCRIPTION_VIEW = 'notebook_description_view'
+DESCRIPTION_MODEL = 'notebook_description_model'
+CELLS = 'notebook_cells_box'
+
+NOTEBOOK_STYLE_CSS = """
+#{title} {{
+    border-radius: 0;
+    border-style: solid;
+    border-width: 0;
+}}
+
+#{title}:focused {{
+}}
+
+#{cells} GtkBox  {{
+    border-style: solid;
+    border-width: 3px;
+}}
+
+""".format(
+    window=WINDOW, 
+    title=TITLE, 
+    cells=CELLS
+).encode('utf-8')
+
+
 
 
 
 class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def __init__(self, presenter, make_builder):
-        WINDOW = 'notebook_window'
-        builder = make_builder(WINDOW)
+        builder = make_builder(WINDOW, TITLE, DESCRIPTION_VIEW, DESCRIPTION_MODEL, CELLS)
         WindowGtk.__init__(self, WINDOW, presenter, builder=builder)
+        self._init_title(builder.get_object(TITLE))
+        self._init_description(builder.get_object(DESCRIPTION_VIEW),
+                               builder.get_object(DESCRIPTION_MODEL))
+        self._init_cells(builder.get_object(CELLS))
+
+        style_provider = Gtk.CssProvider()
+        style_provider.load_from_data(NOTEBOOK_STYLE_CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), 
+            style_provider,     
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
         builder.connect_signals(self)
+
+    def _init_title(self, title):
+        self.title = title
+        title.set_name(TITLE)
+        font_description = Pango.FontDescription('Lucida Sans 48')
+        title.modify_font(font_description)
+
+    def _init_description(self, view, model):        
+        self.desc_view = view
+        self.desc_model = model
+        font_description = Pango.FontDescription('Lucida Sans 10')
+        view.modify_font(font_description)
+
+
+    def _init_cells(self, cells):
+        self.cells = cells
+        cells.set_name(CELLS)
+        expand = False
+        fill = False
+        c = CellWidget()
+        c.show()
+        cells.pack_start(c, expand, fill, 0)
+        c = CellWidget()
+        c.show()
+        cells.pack_start(c, expand, fill, 0)
+        
+        #cells.pack_start(c,
+        c.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(0.0,1.0,1.0,1.0))
+        cells.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(0.0,1.0,1.0,1.0))
+
+
+
 
     def on_notebook_window_delete_event(self, widget, data=None):
         self.presenter.hide_notebook_window()

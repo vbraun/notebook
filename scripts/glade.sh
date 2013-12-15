@@ -13,7 +13,7 @@ fi
 
 CATALOG_DTD=/usr/share/glade3/catalogs/glade-catalog.dtd
 if [ -f "$CATALOG_DTD" ] ; then
-    xmllint --dtdvalid "$CATALOG_DTD" --noout sage_notebook/view/gtk/worksheet.xml
+    xmllint --dtdvalid "$CATALOG_DTD" --noout sage_notebook/view/gtk/widgets.xml
 fi
 
 export GLADE_CATALOG_SEARCH_PATH=$rootdir/sage_notebook/view/gtk

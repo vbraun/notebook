@@ -37,7 +37,10 @@ sys.path.append(sage_notebook_path)
 for p in sys.path:
     print(p)
 
+from terminal_widget import TerminalWidget
 from cell_widget import CellWidget
+
+
 
 
 

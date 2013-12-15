@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <glade-catalog 
-    name="sage_notebook"
+    name="widgets"
     library="gladepython">
 
   <init-function>glade_python_init</init-function>
@@ -10,6 +10,10 @@
 	title="Sage Commandline" 
 	name="TerminalWidget"
 	generic-name="terminal_widget"/>
+    <glade-widget-class 
+	title="Notebook Cell" 
+	name="CellWidget"
+	generic-name="cell_widget"/>
   </glade-widget-classes>
   
 
@@ -18,6 +22,8 @@
       title="Sage Widgets">
     <glade-widget-class-ref 
 	name="TerminalWidget"/>
+    <glade-widget-class-ref 
+	name="CellWidget"/>
   </glade-widget-group>
 
 </glade-catalog>

@@ -710,6 +710,11 @@ Public License instead of this License.  But first, please read
       </object>
     </child>
   </object>
+  <object class="GtkTextBuffer" id="notebook_description_model">
+    <property name="text" translatable="yes">File name: Untitled_Notebook.sage	File size: 34kb
+Created: Tue, Dec 7	Last saved: Tue Dec 13
+Author: Volker Braun</property>
+  </object>
   <object class="GtkWindow" id="notebook_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Sage Notebook</property>
@@ -970,19 +975,64 @@ Public License instead of this License.  But first, please read
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="notebook_scroller">
-                <property name="width_request">600</property>
+              <object class="GtkScrolledWindow" id="notebook_scrolledwindow">
+                <property name="width_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="vscrollbar_policy">always</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkViewport" id="notebook_viewport">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkBox" id="notebook_cells_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkEntry" id="notebook_title">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="has_frame">False</property>
+                            <property name="invisible_char">●</property>
+                            <property name="xalign">0.5</property>
+                            <property name="shadow_type">none</property>
+                            <property name="placeholder_text">Untitled Notebook</property>
+                            <property name="input_hints">GTK_INPUT_HINT_WORD_COMPLETION | GTK_INPUT_HINT_NONE</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkTextView" id="notebook_description_view">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="editable">False</property>
+                            <property name="justification">center</property>
+                            <property name="cursor_visible">False</property>
+                            <property name="buffer">notebook_description_model</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
                 </child>
               </object>
               <packing>
                 <property name="resize">True</property>
-                <property name="shrink">False</property>
+                <property name="shrink">True</property>
               </packing>
             </child>
           </object>
