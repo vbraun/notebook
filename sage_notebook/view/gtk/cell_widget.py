@@ -27,9 +27,29 @@ from gi.repository import GtkSource
 import cairo
 
 
-class SuperSimpleWidget(Gtk.Label):
-    __gtype_name__ = 'SuperSimpleWidget'
+INPUT_OUTPUT_VSPACE = 10
 
+
+class CellVerticalSpacerWidget(Gtk.Misc):
+    __gtype_name__ = 'CellVerticalSpacerWidget'
+
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        self.set_size_request(-1, 20)
+
+    def do_draw(self, cr):
+        # paint background
+        bg_color = self.get_style_context().get_background_color(Gtk.StateFlags.NORMAL)
+        cr.set_source_rgba(*list(bg_color))
+        cr.paint()
+
+
+class CellLabelWidget(Gtk.Label):
+    __gtype_name__ = 'CellLabelWidget'
+    
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        self.set_property('angle', 270)
 
 
 
@@ -70,7 +90,7 @@ class CellExpander(Gtk.Misc):
         cr.set_source_rgba(*list(fg_color));
         cr.set_font_size(18)
         x_pos = 20
-        y_pad = 10
+        y_pad = 0
         y_pos = 0 + y_pad
         brace_height = allocation.height - 2*y_pad
         x_bearing, y_bearing, top_width, top_height = cr.text_extents(glyph_top)[:4]
@@ -89,7 +109,8 @@ class CellExpander(Gtk.Misc):
         cr.show_text(glyph_bot)
 
         overlap = 2
-        x_bearing, y_bearing, stretch_width, stretch_height = cr.text_extents(glyph_stretch)[:4]
+        x_bearing, y_bearing, stretch_width, stretch_height = \
+            cr.text_extents(glyph_stretch)[:4]
         # vertical space to fill with the stretched character
         desired = (brace_height - top_height - mid_height - bot_height)/2 + 2*overlap
         desired *= 1.02   # why? get gaps in long cells
@@ -132,15 +153,22 @@ class CellWidget(Gtk.Grid):
         o = self._make_output()
         e = CellExpander()
         self.attach(e, 0, 0, 1, 2)
-        self.attach(i, 1, 0, 1, 1)
-        self.attach(o, 1, 1, 1, 1)
+        self.attach(i[0], 2, 0, 1, 1)
+        self.attach(i[1], 1, 0, 1, 1)
+        self.attach(o[0], 2, 1, 1, 1)
+        self.attach(o[1], 1, 1, 1, 1)
         
         #expand = False
         #fill = False
         #self.pack_start(i, expand, fill, 0)
         #self.pack_end(o, expand, fill, 0)
 
+    def set_index(self, i):
+        self.in_label.set_text('In[{0}]'.format(i))
+        self.out_label.set_text('Out[{0}]'.format(i))
+
     def _make_input(self):
+        label = self.in_label = CellLabelWidget()
         view = self.in_view = GtkSource.View()
         buffer = self.in_buffer = GtkSource.Buffer()
         style = GtkSource.StyleSchemeManager().get_scheme('tango')
@@ -151,25 +179,22 @@ class CellWidget(Gtk.Grid):
         fontdesc = Pango.FontDescription("Consolas 12")
         view.modify_font(fontdesc)
         self.set_language()
-        view.set_border_window_size(Gtk.TextWindowType.TOP, 10)
-        view.set_border_window_size(Gtk.TextWindowType.BOTTOM, 10)
-        view.set_border_window_size(Gtk.TextWindowType.LEFT, 10)
         view.set_hexpand(True)
         view.set_vexpand(False)
-        return view
+        return label, view
 
     def _make_output(self):
+        label = self.out_label = CellLabelWidget()
         view = self.out_view = Gtk.TextView()
         buffer = self.out_buffer = Gtk.TextBuffer()
         buffer.set_text('output')
         view.set_buffer(buffer)
         fontdesc = Pango.FontDescription("monospace")
         view.modify_font(fontdesc)
-        view.set_border_window_size(Gtk.TextWindowType.BOTTOM, 10)
-        view.set_border_window_size(Gtk.TextWindowType.LEFT, 10)
+        view.set_border_window_size(Gtk.TextWindowType.TOP, INPUT_OUTPUT_VSPACE)
         view.set_hexpand(True)
         view.set_vexpand(False)
-        return view
+        return label, view
 
     def set_language(self, language='python'):
         mgr = GtkSource.LanguageManager()
@@ -179,5 +204,5 @@ class CellWidget(Gtk.Grid):
         view.set_insert_spaces_instead_of_tabs(True)
         view.set_tab_width(4)
         view.set_auto_indent(True)
-        view.set_show_line_numbers(True)
+        #view.set_show_line_numbers(True)
         view.set_show_right_margin(False)

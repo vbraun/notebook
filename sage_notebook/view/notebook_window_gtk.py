@@ -29,7 +29,9 @@ from gi.repository import Gdk, Gtk, Pango
 
 from .window_gtk import WindowGtk
 from .notebook_window import NotebookWindowABC
-from .gtk.cell_widget import CellWidget
+from .gtk.cell_widget import (
+    CellVerticalSpacerWidget, CellWidget
+)
 
 # background-color: rgba (0,0,0,1); 
 
@@ -59,7 +61,9 @@ NOTEBOOK_STYLE_CSS = """
     background: white;
 }}
 
-CellWidget * {{
+#{cells} CellLabelWidget {{
+    color: grey;
+    font-size: 90%;
 }}
 
 
@@ -113,11 +117,15 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         cells.set_name(CELLS)
         expand = False
         fill = True
-        c = CellWidget()
-        cells.pack_start(c, expand, fill, 0)
-        c = CellWidget()
-        cells.pack_start(c, expand, fill, 0)
-        
+        c1, c2, c3 = CellWidget(), CellWidget(), CellWidget()
+        cells.pack_start(c1, expand, fill, 0)
+        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
+        cells.pack_start(c2, expand, fill, 0)
+        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
+        cells.pack_start(c3, expand, fill, 0)
+        c1.set_index(1)
+        c2.set_index(2)
+        c3.set_index(3)
         cells.show_all()
 
 
