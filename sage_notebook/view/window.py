@@ -26,7 +26,7 @@ Base Class for Windows
 
 class WindowABC(object):
 
-    def __init__(self, name, presenter):
+    def __init__(self, name, presenter, *args):
         """
         INPUT:
         
@@ -80,9 +80,20 @@ class WindowABC(object):
         self.show()
 
     def hide(self):
+        """
+        Hide window temporarily.
+        
+        Use :meth:`show` to show the window again.
+        """
         raise NotImplementedError
 
     def destroy(self):
+        """
+        Hide window and release all resources.
+
+        After the window is destroyed, it is no longer possible to
+        :meth:`show` it.
+        """
         raise NotImplementedError
 
 
@@ -91,15 +102,16 @@ class WindowABC(object):
 
 class ModalDialogABC(WindowABC):
 
-    def __init__(self, parent_window, name):
+    def __init__(self, name, presenter, parent_window, *args):
         """
         INPUT:
         
          - ``parent_window`` -- A :class:`Window` instance. The dialog
-          is displayed on top of its parent.
+          is displayed on top of its parent. May be none if the dialog
+          is not associated to a window.
 
         - ``name`` -- anything that identifies the window.
         """
-        super().__init__(name)
+        super().__init__(name, presenter, parent_window, *args)
 
     

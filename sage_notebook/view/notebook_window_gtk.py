@@ -154,11 +154,17 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         self.presenter.hide_notebook_window()
 
 
+    def on_notebook_menu_cut_activate(self, widget, data=None):
+        self.presenter.show_error(self, 'cut', "todo: cut")
+
     def on_notebook_menu_copy_activate(self, widget, data=None):
-        self.presenter.show_notification(self, "todo: copy")
+        self.presenter.show_error(self, 'copy', "todo: copy")
         
     def on_notebook_menu_paste_activate(self, widget, data=None):
-        self.presenter.show_notification(self, "todo: paste")
+        self.presenter.show_error(self, 'paste', "todo: paste")
+
+    def on_notebook_menu_delete_activate(self, widget, data=None):
+        self.presenter.show_error(self, 'delete', "todo: delete")
 
 
     def on_notebook_menu_about_activate(self, widget, data=None):

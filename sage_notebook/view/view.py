@@ -145,3 +145,40 @@ class ViewABC(object):
         nb = self.notebook_window
         self._hide_window(nb)
         
+    ###################################################################
+    # The Preferences window
+
+    @property
+    def preferences_window(self):
+        raise NotImplementedError
+
+    def show_preferences_window(self, config):
+        prefs = self.preference_window
+        prefs.update_from(config)
+        self._show_window(prefs)
+
+    def hide_preferences_window(self):
+        prefs = self.preferences_window
+        self._hide_window(prefs)
+
+
+    ###################################################################
+    # Modal dialogs
+
+    def new_notification_dialog(self, parent, text):
+        raise NotImplementedError
+
+    def new_error_dialog(self, parent, title, text):
+        raise NotImplementedError
+        
+    def new_setup_assistant(self, parent, sage_root, callback):
+        raise NotImplementedError
+
+    def destroy_modal_dialog(self):
+        """
+        Destroy the currently-shown modal dialog
+        """
+        assert self._current_dialog is not None
+        self._current_dialog.destroy()
+        self._current_dialog = None
+

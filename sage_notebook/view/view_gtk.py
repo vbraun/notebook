@@ -77,3 +77,40 @@ class ViewGtk(ViewABC):
         notebook.restore_geometry(geometry)
         return notebook
         
+
+    ###################################################################
+    # The preferences dialog
+
+    @cached_property
+    def preferences_dialog(self):
+        from .preferences_dialog_gtk import PreferencesDialogGtk
+        prefs = PreferencesDialogGtk(self.presenter, self.make_builder)
+        return prefs
+
+    def populate_preferences_dialog(self, config):
+        self.preferences_dialog.apply(config)
+
+    ###################################################################
+    # Modal dialogs
+
+    def new_notification_dialog(self, parent, text):
+        from .notification_dialog_gtk import NotificationDialogGtk
+        dlg = NotificationDialogGtk(self.presenter, self.make_builder, parent, text)
+        assert self._current_dialog is None
+        self._current_dialog = dlg
+        return dlg
+
+    def new_error_dialog(self, parent, title, text):
+        from .error_dialog_gtk import ErrorDialogGtk
+        dlg = ErrorDialogGtk(self.presenter, self.make_builder, parent, title, text)
+        assert self._current_dialog is None
+        self._current_dialog = dlg
+        return dlg
+        
+    def new_setup_assistant(self, parent, sage_root, callback):
+        from .setup_assistant_gtk import SetupAssistantGtk
+        dlg = SetupAssistantGtk(self.presenter, self.make_builder, parent, sage_root, callback)
+        assert self._current_dialog is None
+        self._current_dialog = dlg
+        return dlg
+        

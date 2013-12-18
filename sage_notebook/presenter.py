@@ -82,7 +82,7 @@ class Presenter(object):
 
     def destroy_modal_dialog(self):
         self.view.destroy_modal_dialog()
-        if not self.view.current_window is None:
+        if self.view.current_window is None:
             self.terminate() 
 
     ###################################################################
