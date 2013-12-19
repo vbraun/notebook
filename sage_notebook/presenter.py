@@ -29,9 +29,11 @@ about data nor about the gui, it just ties the two together.
 
 class Presenter(object):
 
-    def __init__(self, view_class, model_class):
+    def __init__(self, view_class, model_class, main_loop_class):
+        self.main_loop = main_loop_class()
         self.view = view_class(self)
         self.model = model_class(self)
+        self.main_loop.add_rpc_clients(self.model.get_rpc_clients())
         self.show_notebook_window()
 
         #if self.model.config.sage_root is None:

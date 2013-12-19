@@ -37,13 +37,18 @@ class Application(object):
     def __init__(self, view_backend):
         if view_backend == 'gtk':
             from sage_notebook.view.view_gtk import ViewGtk as View
+            from sage_notebook.main_loop_gtk import MainLoopGtk as MainLoop
         elif view_backend == 'http':
             from sage_notebook.view.view_http import ViewHttp as View
         elif view_backend == 'text':
             from sage_notebook.view.view_text import ViewText as View
-        self.presenter = Presenter(View, Model)
+        self.presenter = Presenter(View, Model, MainLoop)
         self.view = self.presenter.view
         self.model = self.presenter.model
+        self.main_loop = self.presenter.main_loop
+
+    def run(self, debug):
+        self.main_loop.run(debug)
 
 
 

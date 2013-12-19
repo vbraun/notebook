@@ -25,7 +25,7 @@ import logging
 
 
 from .config import Config
-
+from .compute_service import ComputeService
 
 
 class Model:
@@ -34,6 +34,10 @@ class Model:
         self.presenter = presenter
         c = Config()
         self.config = c
+        self.compute = ComputeService(self)
+
+    def get_rpc_clients(self):
+        return [self.compute.rpc_client]
 
     def terminate(self):
         # save

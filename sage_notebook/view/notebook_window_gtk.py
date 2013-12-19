@@ -117,17 +117,25 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         cells.set_name(CELLS)
         expand = False
         fill = True
-        c1, c2, c3 = CellWidget(), CellWidget(), CellWidget()
+        key_cb = self.on_notebook_cell_key_press_event
+        c1, c2, c3 = CellWidget(key_cb), CellWidget(key_cb), CellWidget(key_cb)
+        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         cells.pack_start(c1, expand, fill, 0)
         cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         cells.pack_start(c2, expand, fill, 0)
         cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         cells.pack_start(c3, expand, fill, 0)
+        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         c1.set_index(1)
         c2.set_index(2)
         c3.set_index(3)
         cells.show_all()
 
+    def on_notebook_cell_key_press_event(self, widget, event):
+        if (event.keyval == Gdk.KEY_Return) and (event.state & Gdk.ModifierType.CONTROL_MASK):
+            print('Ctrl-Enter')
+            return True
+        return False
 
     def on_notebook_window_delete_event(self, widget, data=None):
         self.presenter.hide_notebook_window()

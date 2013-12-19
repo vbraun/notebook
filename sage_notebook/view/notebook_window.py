@@ -27,4 +27,5 @@ from .window import WindowABC
 
 class NotebookWindowABC(WindowABC):
 
-    pass
+    def on_notebook_evaluate_cell(self, cell_id, input_string):
+        self.presenter.evaluate_cell(cell_id, input_string)

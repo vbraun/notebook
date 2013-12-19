@@ -53,34 +53,12 @@ def check_gtk_prerequisites():
         sys.exit(1)
 
 
-def debug_shell_gtk(app):
-    from IPython.lib.inputhook import enable_gtk3
-    enable_gtk3()
-    from IPython.frontend.terminal.ipapp import TerminalIPythonApp
-    ip = TerminalIPythonApp.instance()
-    ip.initialize(argv=[])
-    ip.shell.enable_gui('gtk3')
-    ip.shell.user_global_ns['app'] = app
-    def ipy_import(module_name, identifier):
-        module = importlib.import_module(module_name)
-        ip.shell.user_global_ns[identifier] = getattr(module, identifier) 
-    #ipy_import('sage_notebook.model.git_interface', 'GitInterface')
-    ip.start()
-
 
 def launch_gtk(debug=False):
     check_gtk_prerequisites()
     from sage_notebook.app import Application
     app = Application('gtk')
-    if debug:
-        debug_shell_gtk(app)
-    else:
-        from gi.repository import Gtk
-        # workaround for https://bugzilla.gnome.org/show_bug.cgi?id=622084
-        import signal
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
-        # end workaround
-        Gtk.main()
+    app.run(debug)
 
 
 
