@@ -1,7 +1,6 @@
 """
-The Data Model and Backend
+Customized Python logger for the Sage Notebook
 """
-
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
 #  Copyright (C) 2013  Volker Braun <vbraun.name@gmail.com>
@@ -24,34 +23,29 @@ The Data Model and Backend
 import logging
 
 
-from .config import Config
-from .compute_service import ComputeService
-
-
-class Model:
+def make_logger(name, doctest_mode=False):
+    logger = logging.getLogger(name)
+    if len(logger.handlers) == 0:
+        if doctest_mode:
+            formatter = logging.Formatter('[%(name)s] %(levelname)s: %(message)s')
+        else:
+            formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s',
+                                          datefmt='%H:%M:%S')
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
     
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
-        self.compute = ComputeService(self)
+    return logger
 
-    def get_rpc_clients(self):
-        return [self.compute.rpc_client]
 
-    def terminate(self):
-        # save
-        pass
+def enable_doctest_mode():
+    global logger
+    logger = make_logger('GUI', True)    
 
-    def get_sage_installation(self, sage_root):
-        """
-        Return data about the Sage installation at ``sage_root``
-    
-        INPUT:
 
-        - ``sage_root`` -- a directory name or ``None`` (default). The 
-          path will be searched if not specified.
-        """
-        from .sage_installation import SageInstallation
-        return SageInstallation(sage_root)
+logger = make_logger('GUI')    
+
+
+
 

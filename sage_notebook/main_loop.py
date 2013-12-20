@@ -2,4 +2,6 @@
 
 
 class MainLoopABC(object):
-    pass
+
+    def quit(self):
+        raise NotImplementedError

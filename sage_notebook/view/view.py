@@ -181,4 +181,3 @@ class ViewABC(object):
         assert self._current_dialog is not None
         self._current_dialog.destroy()
         self._current_dialog = None
-

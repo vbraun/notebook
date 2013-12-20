@@ -1,6 +1,10 @@
 """
-The Data Model and Backend
+Setup Assistant
+
+This is a dialog that will be shown at first run. It is supposed to
+select which Sage you are going to use, and possibly other settings.
 """
+
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
@@ -19,39 +23,13 @@ The Data Model and Backend
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
+ 
+from .window import ModalDialogABC
 
 
-import logging
+class SetupAssistantDialogABC(ModalDialogABC):
 
-
-from .config import Config
-from .compute_service import ComputeService
-
-
-class Model:
-    
-    def __init__(self, presenter):
-        self.presenter = presenter
-        c = Config()
-        self.config = c
-        self.compute = ComputeService(self)
-
-    def get_rpc_clients(self):
-        return [self.compute.rpc_client]
-
-    def terminate(self):
-        # save
-        pass
-
-    def get_sage_installation(self, sage_root):
-        """
-        Return data about the Sage installation at ``sage_root``
-    
-        INPUT:
-
-        - ``sage_root`` -- a directory name or ``None`` (default). The 
-          path will be searched if not specified.
-        """
-        from .sage_installation import SageInstallation
-        return SageInstallation(sage_root)
+    def __init__(self, sage_root, callback):
+        self.sage_root = sage_root
+        self.callback = callback
 

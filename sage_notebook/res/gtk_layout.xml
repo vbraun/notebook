@@ -1480,6 +1480,10 @@ Author: Volker Braun</property>
     <property name="modal">True</property>
     <property name="icon">icons/sage.svg</property>
     <property name="type_hint">dialog</property>
+    <signal name="close" handler="on_setup_assistant_close" swapped="no"/>
+    <signal name="apply" handler="on_setup_assistant_apply" swapped="no"/>
+    <signal name="cancel" handler="on_setup_assistant_cancel" swapped="no"/>
+    <signal name="prepare" handler="on_setup_assistant_prepare" swapped="no"/>
     <child>
       <placeholder/>
     </child>

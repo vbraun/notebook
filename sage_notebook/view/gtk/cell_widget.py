@@ -35,7 +35,7 @@ class CellVerticalSpacerWidget(Gtk.Misc):
 
     def __init__(self, *args, **kwds):
         super().__init__(*args, **kwds)
-        self.set_size_request(-1, 20)
+        self.set_size_request(-1, 10)
 
     def do_draw(self, cr):
         # paint background

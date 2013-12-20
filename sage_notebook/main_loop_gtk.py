@@ -1,62 +1,11 @@
 
+import logging
+logger = logging.getLogger('GUI')
+
+
 from gi.repository import GLib, GObject
 
 from .main_loop import MainLoopABC
-
-
-
-# import ctypes
-
-
-# # Python representation of C struct
-# class _GPollFD(ctypes.Structure):
-#     _fields_ = [("fd", ctypes.c_int),
-#                 ("events", ctypes.c_short),
-#                 ("revents", ctypes.c_short)]
-
-# # Poll function signature
-# _poll_func_builder = ctypes.CFUNCTYPE(None, ctypes.POINTER(_GPollFD), ctypes.c_uint, ctypes.c_int)
-
-# # Pool function
-# def _poll(ufds, nfsd, timeout):
-#     rlist = []
-#     wlist = []
-#     xlist = []
-
-#     for i in xrange(nfsd):
-#         wfd = ufds[i]
-#         if wfd.events & GLib.IOCondition.IN.real:
-#             rlist.append(wfd.fd)
-#         if wfd.events & GLib.IOCondition.OUT.real:
-#             wlist.append(wfd.fd)
-#         if wfd.events & (GLib.IOCondition.ERR.real | GLib.IOCondition.HUP.real):
-#             xlist.append(wfd.fd)
-
-#     if timeout < 0:
-#         timeout = None
-#     else:
-#         timeout = timeout / 1000.0
-
-#     (rlist, wlist, xlist) = select.select(rlist, wlist, xlist, timeout)
-
-#     for i in xrange(nfsd):
-#         wfd = ufds[i]
-#         wfd.revents = 0
-#         if wfd.fd in rlist:
-#             wfd.revents = GLib.IOCondition.IN.real
-#         if wfd.fd in wlist:
-#             wfd.revents |= GLib.IOCondition.OUT.real
-#         if wfd.fd in xlist:
-#             wfd.revents |= GLib.IOCondition.HUP.real
-#         ufds[i] = wfd
-
-# _poll_func = _poll_func_builder(_poll)
-
-# glib = ctypes.CDLL('libglib-2.0.so.0')
-# glib.g_main_context_set_poll_func(None, _poll_func)
-
-
-
 
 
 
@@ -85,7 +34,7 @@ class MainLoopGtk(MainLoopABC):
     def add_rpc_clients(self, clients):
         self._rpc_clients.extend(clients)
     
-    def debug_shell_gtk(app):
+    def debug_shell_gtk(self, app):
         from IPython.lib.inputhook import enable_gtk3
         enable_gtk3()
         from IPython.frontend.terminal.ipapp import TerminalIPythonApp
@@ -100,7 +49,10 @@ class MainLoopGtk(MainLoopABC):
         ip.start()
 
 
-    def run(self, debug):
+    def run(self, debug=None):
+        """
+        Run the main loop.
+        """
         client = self._rpc_clients[0]
         rlist, wlist, xlist = client.select_args()
         fds = set(rlist + wlist + xlist)
@@ -118,22 +70,24 @@ class MainLoopGtk(MainLoopABC):
                 source.set_callback(self.loop, fd)
                 source.attach(context)
 
-        GObject.timeout_add(100, callback)
-        loop = GLib.MainLoop()
-        loop.run()
-        return
+        GObject.timeout_add(500, callback)
+        #loop = GLib.MainLoop()
+        #loop.run()
+        #return
 
-        if debug:
-            debug_shell_gtk(app)
+        if debug is not None:
+            self.debug_shell_gtk(debug)
         else:
             from gi.repository import Gtk
             # workaround for https://bugzilla.gnome.org/show_bug.cgi?id=622084
             import signal
             signal.signal(signal.SIGINT, signal.SIG_DFL)
             # end workaround
+            logger.debug('Entering main loop')
             Gtk.main()
 
-
+    def quit(self):
+        pass
     
     def loop(self, fd):
         """

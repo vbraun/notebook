@@ -26,8 +26,9 @@ variable ``app`` in the global namespace.
 ##############################################################################
 
 
-from sage_notebook.presenter import Presenter
-from sage_notebook.model.model import Model
+from .logger import logger
+from .presenter import Presenter
+from .model.model import Model
 
 
 
@@ -48,7 +49,11 @@ class Application(object):
         self.main_loop = self.presenter.main_loop
 
     def run(self, debug):
-        self.main_loop.run(debug)
+        if debug:
+            self.main_loop.run(debug=self)
+        else:
+            self.main_loop.run()
+            
 
 
 

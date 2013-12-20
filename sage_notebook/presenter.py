@@ -24,7 +24,8 @@ about data nor about the gui, it just ties the two together.
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
-
+import logging
+logger = logging.getLogger('GUI')
 
 
 class Presenter(object):
@@ -34,12 +35,10 @@ class Presenter(object):
         self.view = view_class(self)
         self.model = model_class(self)
         self.main_loop.add_rpc_clients(self.model.get_rpc_clients())
-        self.show_notebook_window()
-
-        #if self.model.config.sage_root is None:
-        #    self.show_setup_assistant(None, None, self.setup_assistant_first_run_finished)
-        #else:
-        #    self.show_notebook_window()
+        if self.model.config.sage_root is None:
+            self.show_setup_assistant(None, None, self.setup_assistant_first_run_finished)
+        else:
+            self.show_notebook_window()
  
     def save_geometry(self):
         geometry = self.model.config.window_geometry
@@ -56,6 +55,7 @@ class Presenter(object):
         self.save_geometry()
         self.view.terminate()
         self.model.terminate()
+        self.main_loop.quit()
 
     ###################################################################
     # The main Notebook window
@@ -83,6 +83,7 @@ class Presenter(object):
     # Common for all modal dialogs
 
     def destroy_modal_dialog(self):
+        logger.debug('destroy_modal_dialog')
         self.view.destroy_modal_dialog()
         if self.view.current_window is None:
             self.terminate() 
@@ -102,7 +103,7 @@ class Presenter(object):
     ###################################################################
     # Setup assistant (modal)
 
-    def sage_installation(self, sage_root):
+    def get_sage_installation(self, sage_root=None):
         """
         Return data about the Sage installation at ``sage_root``
     
@@ -111,7 +112,19 @@ class Presenter(object):
         - ``sage_root`` -- a directory name or ``None`` (default). The 
           path will be searched if not specified.
         """
-        return self.model.sage_installation(sage_root)
+        return self.model.get_sage_installation(sage_root)
+
+    def set_sage_installation(self, sage_install):
+        """
+        Return data about the Sage installation at ``sage_root``
+    
+        INPUT:
+
+        - ``sage_root`` -- a directory name or ``None`` (default). The 
+          path will be searched if not specified.
+        """
+        self.model.config.sage_root = sage_install.sage_root
+        self.model.config.sage_version = sage_install.version
 
     def show_setup_assistant(self, parent, sage_root, callback):
         """
@@ -128,14 +141,17 @@ class Presenter(object):
         """
         self.view.new_setup_assistant(parent, sage_root, callback).show()
 
-    def setup_assistant_first_run_finished(self, sage_install):
+    def on_setup_assistant_first_run_finished(self, sage_install):
         """
         The callback for the first run
-        """
-        self.model.config.sage_root = sage_install.sage_root
-        self.model.config.sage_version = sage_install.version
-        if not self.view.have_open_window():
-            self.show_default_window()
+        
+        .. note::
 
+            The assistant is responsible to call
+            :meth:`destroy_modal_dialog` after the callback returns.
+        """
+        self.set_sage_installation(sage_install)
+        self.show_notebook_window()
+        
 
         

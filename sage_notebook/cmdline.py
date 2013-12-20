@@ -24,8 +24,9 @@ Handle Command Line Options and Launch the Sage Notebook
 import sys
 import os
 import importlib
-import logging
 
+import logging
+logger = logging.getLogger('GUI')
 
 
 
@@ -33,23 +34,23 @@ def check_gtk_prerequisites():
     try:
         from gi.repository import Gtk
     except ImportError:
-        logging.critical('You need the Python GTK interface!')
+        logger.critical('Missing dependency: GTK3 Python interface.')
         sys.exit(1)
     try:
         from gi.repository import GtkSource, GObject
         GObject.type_register(GtkSource.View)
     except ImportError:
-        logging.critical('You need the GtkSourceView widget!')
+        logger.critical('Missing dependency: GtkSourceView widget.')
         sys.exit(1)        
     try:
         import cairo
     except ImportError:
-        logging.critical('You need the Python Cairo interface!')
+        logger.critical('Missing dependency: Python Cairo interface.')
         sys.exit(1)
     try: 
         from gi.repository import Vte
     except ImportError:
-        logging.critical('You need VTE!')
+        logger.critical('Missing dependency: VTE terminal widget.')
         sys.exit(1)
 
 
@@ -59,7 +60,7 @@ def launch_gtk(debug=False):
     from sage_notebook.app import Application
     app = Application('gtk')
     app.run(debug)
-
+    logger.debug('Main loop quit')
 
 
 description = """
@@ -78,11 +79,9 @@ def launch():
     from argparse import ArgumentParser
     parser = ArgumentParser(description=description)
     parser.add_argument('--debug', dest='debug', action='store_true',
-                        default=False, 
-                        help='debug')
+                        default=False, help='debug')
     parser.add_argument('--doctest', dest='doctest', action='store_true',
-                        default=False, 
-                        help='doctest')
+                        default=False, help='doctest')
     parser.add_argument('--log', dest='log', default=None,
                         help='one of [DEBUG, INFO, ERROR, WARNING, CRITICAL]')
     args = parser.parse_args()

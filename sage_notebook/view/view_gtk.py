@@ -108,8 +108,9 @@ class ViewGtk(ViewABC):
         return dlg
         
     def new_setup_assistant(self, parent, sage_root, callback):
-        from .setup_assistant_gtk import SetupAssistantGtk
-        dlg = SetupAssistantGtk(self.presenter, self.make_builder, parent, sage_root, callback)
+        from .setup_assistant_dialog_gtk import SetupAssistantDialogGtk
+        dlg = SetupAssistantDialogGtk(self.presenter, self.make_builder, parent, 
+                                      sage_root, callback)
         assert self._current_dialog is None
         self._current_dialog = dlg
         return dlg
