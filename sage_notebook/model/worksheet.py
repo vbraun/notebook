@@ -6,22 +6,36 @@ Model for the Worksheet
 
 
 class Cell(object):
-    def __init__(self):
+    def __init__(self, cell_id=None):
+        if cell_id is None:
+            import uuid
+            self._id = uuid.uuid4().hex
+        else:
+            self._id = cell_id
         self._input = None
         self.clear_output()
 
-    def set_input(self, input_string):
-        self._input = input_string
-
+    @property
+    def id(self):
+        return self._id
+    
     def clear_output(self):
-        self._stdout = None
-        self._stderr = None
+        self._stdout = ''
+        self._stderr = ''
         
     def accumulate_stdout(self, stdout):
         self._stdout += stdout
 
     def accumulate_stderr(self, stderr):
         self._stderr += stderr
+
+    @property
+    def input(self):
+        return self._input
+
+    @input.setter
+    def input(self, value):
+        self._input = value
 
     @property
     def stdout(self):
@@ -38,4 +52,5 @@ class Worksheet(object):
     def __init__(self):
         pass
         
-
+    def get_cell(self, cell_id):
+        pass

@@ -28,4 +28,26 @@ from .window import WindowABC
 class NotebookWindowABC(WindowABC):
 
     def on_notebook_evaluate_cell(self, cell_id, input_string):
-        self.presenter.evaluate_cell(cell_id, input_string)
+        """
+        Callback to use for cell evaluation request (like Ctrl-Enter)
+        """
+        self.presenter.evaluate_cell_init(cell_id, input_string)
+
+    def cell_busy(self, cell):
+        """
+        Update the view of the cell to display a running computation.
+        """
+        raise NotImplemented
+
+    def cell_update(self, cell):
+        """
+        Update the view of the cell to display a partial result.
+        """
+        raise NotImplemented
+        
+    def cell_finished(self, cell):
+        """
+        Update the view of the cell to display the final result
+        """
+        raise NotImplemented
+        

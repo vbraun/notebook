@@ -140,7 +140,6 @@ class CellExpander(Gtk.Misc):
 class CellWidget(Gtk.Grid):
     __gtype_name__ = 'CellWidget'
 
-
     def __init__(self, key_press_event_callback, *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
         super().__init__(*args, **kwds)
@@ -185,6 +184,13 @@ class CellWidget(Gtk.Grid):
         view.set_vexpand(False)
         return label, view
 
+    def set_input(self, input_string):
+        self.in_buffer.set_text(input_string)
+        
+    def get_input(self):
+        buf = self.in_buffer
+        return buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
+
     def _make_output(self):
         label = self.out_label = CellLabelWidget()
         view = self.out_view = Gtk.TextView()
@@ -198,6 +204,9 @@ class CellWidget(Gtk.Grid):
         view.set_vexpand(False)
         return label, view
 
+    def set_output(self, cell):
+        self.out_buffer.set_text(cell.stdout + '\n' + cell.stderr)
+        
     def set_language(self, language='python'):
         mgr = GtkSource.LanguageManager()
         lang = mgr.get_language(language)
@@ -208,3 +217,5 @@ class CellWidget(Gtk.Grid):
         view.set_auto_indent(True)
         #view.set_show_line_numbers(True)
         view.set_show_right_margin(False)
+
+    

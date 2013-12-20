@@ -95,7 +95,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             style_provider,     
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-
         builder.connect_signals(self)
 
     def _init_title(self, title):
@@ -113,12 +112,14 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
 
     def _init_cells(self, cells):
-        self.cells = cells
+        self.cells_view = cells
+        self.cells_model = []
         cells.set_name(CELLS)
         expand = False
         fill = True
         key_cb = self.on_notebook_cell_key_press_event
-        c1, c2, c3 = CellWidget(key_cb), CellWidget(key_cb), CellWidget(key_cb)
+        self.cells_model = c1, c2, c3 = CellWidget(key_cb), CellWidget(key_cb), CellWidget(key_cb)
+        self.current_cell_view = c1
         cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         cells.pack_start(c1, expand, fill, 0)
         cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
@@ -131,9 +132,37 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         c3.set_index(3)
         cells.show_all()
 
+
+    def find_cell_widget(self, cell):
+        return self.cells_model[0]
+
+    def cell_busy(self, cell):
+        """
+        Update the view of the cell to display a running computation.
+        """
+        widget = self.find_cell_widget(cell)
+        widget.set_output(cell)
+
+    def cell_update(self, cell):
+        """
+        Update the view of the cell to display a partial result.
+        """
+        widget = self.find_cell_widget(cell)
+        widget.set_output(cell)
+        
+    def cell_finished(self, cell):
+        """
+        Update the view of the cell to display the final result
+        """
+        widget = self.find_cell_widget(cell)
+        widget.set_output(cell)
+        
     def on_notebook_cell_key_press_event(self, widget, event):
         if (event.keyval == Gdk.KEY_Return) and (event.state & Gdk.ModifierType.CONTROL_MASK):
-            print('Ctrl-Enter')
+            cell_id = 1
+            input_string = self.current_cell_view.get_input()
+            print(cell_id, input_string, widget)
+            self.on_notebook_evaluate_cell(cell_id, input_string)
             return True
         return False
 

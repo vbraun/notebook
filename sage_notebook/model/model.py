@@ -34,7 +34,7 @@ class Model:
         self.presenter = presenter
         c = Config()
         self.config = c
-        self.compute = ComputeService(self)
+        self.compute = ComputeService(presenter)
 
     def get_rpc_clients(self):
         return [self.compute.rpc_client]
@@ -55,3 +55,6 @@ class Model:
         from .sage_installation import SageInstallation
         return SageInstallation(sage_root)
 
+    def get_cell(self, cell_id):
+        from .worksheet import Cell
+        return Cell()

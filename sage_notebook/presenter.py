@@ -60,6 +60,43 @@ class Presenter(object):
     ###################################################################
     # The main Notebook window
 
+    def evaluate_cell_init(self, cell_id, input_string):
+        """
+        Initiate evaluating a notebook cell
+        """
+        logger.info('evaluating cell %s', cell_id)
+        cell = self.model.get_cell(cell_id)
+        cell.input = input_string
+        self.model.compute.eval(cell)
+        self.view.notebook_window.cell_busy(cell)
+
+    def on_evaluate_cell_updated(self, cell_id, cell):
+        """
+        Callback for changes in a notebook cell that is currently
+        computing.
+        
+        Typically, this adds partial output. This may only be
+        triggered after a preceeding :meth:`evaluate_cell_init`, and
+        not after a subsequent :meth:`on_evaluate_cell_finish`.
+        """
+        logger.debug('updating cell %s', cell_id)
+        self.view.notebook_window.cell_update(cell)
+
+    def on_evaluate_cell_finished(self, cell_id, cell):
+        """
+        Callback for changes in a notebook cell that just finished.
+
+        This finishes the computation on the cell. This will only be
+        triggered after a preceeding :meth:`on_evaluate_cell_init`.
+
+        The cell need not have finished successfully, it might have
+        had an error or even crashed the Sage process. However, it is
+        guaranteed that every :meth:`evaluate_cell_init` is followed
+        up with a :meth:`on_evaluate_cell_finished`.
+        """
+        logger.info('finished cell %s', cell_id)
+        self.view.notebook_window.cell_finished(cell)
+
     def show_notebook_window(self):
         return self.view.show_notebook_window()
 

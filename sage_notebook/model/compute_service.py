@@ -3,6 +3,7 @@ The compute service
 """
 import os
 import logging
+logger = logging.getLogger('GUI')
 
 from sage.rpc.core.transport import TransportListen
 from sage.rpc.core.monitor import MonitorClient
@@ -14,12 +15,6 @@ class ComputeServiceClient(MonitorClient):
     def __init__(self, service, *args, **kwds):
         super().__init__(*args, **kwds)
         self.service = service
-
-    def _impl_sage_eval_result(self, cpu_time, wall_time, label):
-        """
-        RPC callback when evaluation is finished
-        """
-        self.service._impl_sage_eval_result(cpu_time, wall_time, label)
 
     def _impl_sage_eval_stdin(self, label):
         """
@@ -39,11 +34,17 @@ class ComputeServiceClient(MonitorClient):
         """
         self.service._impl_sage_eval_stderr(stderr, label)
 
+    def _impl_sage_eval_result(self, cpu_time, wall_time, label):
+        """
+        RPC callback when evaluation is finished
+        """
+        self.service._impl_sage_eval_result(cpu_time, wall_time, label)
+
     def _impl_sage_eval_crash(self, label):
         """
         RPC callback when the compute server crashed
         """
-        self.service._impl_sage_eval_crash(self)
+        self.service._impl_sage_eval_crash(self, label)
 
 
 
@@ -56,6 +57,9 @@ class Queue(object):
 
     def __getitem__(self, label):
         return self._cells[label]
+
+    def is_empty(self):
+        return self._current_label is None
 
     @property
     def current_label(self):
@@ -74,16 +78,19 @@ class Queue(object):
         self._next.append(label)
         if self._current_label is None:
             self._current_label = label
+        assert len(self._cells) == len(self._next)
 
     def pop(self):
         old_label, old_cell = self.current_label, self.current_cell
         if old_label is not None:
-            del self._cells[label]
+            del self._cells[old_label]
+            self._next.remove(old_label)
         if len(self._next) == 0:
             self._current_label = None
         else:
             self._current_label = self._next[0]
             self._next = self._next[1:]
+        assert len(self._cells) == len(self._next)
         return (old_label, old_cell)
         
 
@@ -92,15 +99,14 @@ class Queue(object):
 
 class ComputeService(object):
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, presenter):
+        self.presenter = presenter
         self.queue = Queue()
-        self.start()
+        self.start_client()
         from sage.rpc.core.logging_origin import logger
         logger.setLevel(logging.DEBUG)
 
-
-    def start(self):
+    def start_client(self):
         interface = 'localhost'
         cookie = self._random_cookie()
         uri = 'tcp://localhost:0'
@@ -108,7 +114,7 @@ class ComputeService(object):
         self._monitor = monitor = self._spawn_monitor(
             cookie, transport.port(), interface)
         transport.accept()
-        self._client = client = ComputeServiceClient(self, transport, cookie)
+        self._client = ComputeServiceClient(self, transport, cookie)
         #client.wait_for_initialization()
         #self._add_idle(client)        
         #import time
@@ -116,6 +122,9 @@ class ComputeService(object):
         #    self._inputhook()
         #    time.sleep(0.01)
         
+    def restart_client(self):
+        raise NotImplementedError
+
     @property
     def rpc_client(self):
         return self._client
@@ -157,47 +166,68 @@ class ComputeService(object):
         from subprocess import Popen
         return Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
 
-    def select_args(self):
-        return self._client.select_args()
-
-    def select_handle(self, rlist ,wlist, xlist):
-        return self._client.select_handle(rlist, wlist, xlist)
-
     def eval(self, cell):
         """
         Start evaluating a notebook cell.
         """
-
-    def _impl_sage_eval_result(self, cpu_time, wall_time, label):
-        """
-        RPC callback when evaluation is finished
-        """
-        service._impl_sage_eval_result(cpu_time, wall_time, label)
-
-    def _impl_sage_eval_stdin(self, label):
+        ready = self.queue.is_empty()
+        cell.clear_output()
+        self.queue.push(cell.id, cell)
+        if ready:
+            self._client.sage_eval(cell.input, cell.id)
+    
+    def _impl_sage_eval_stdin(self, cell_id):
         """
         RPC callback when evaluation requests stdin
         """
-        self.log.debug('stdin')
-        print('Input requested')
-
-    def _impl_sage_eval_stdout(self, stdout, label):
+        cell = self.queue.current_cell
+        assert cell.id == cell_id
+        logger.error('stdin')   # not implemented
+        
+    def _impl_sage_eval_stdout(self, stdout, cell_id):
         """
         RPC callback when evaluation produces stdout
         """
-        self.log.debug('stdout %s', stdout.strip())
-        print('STDOUT ' + stdout)
+        cell = self.queue.current_cell
+        assert cell.id == cell_id
+        logger.debug('stdout %s', stdout.strip())
+        cell.accumulate_stdout(stdout)
+        self.presenter.on_evaluate_cell_updated(cell_id, cell)
 
-    def _impl_sage_eval_stderr(self, stderr, label):
+    def _impl_sage_eval_stderr(self, stderr, cell_id):
         """
         RPC callback when evaluation produces stderr
         """
-        self.log.debug('stderr %s', stderr.strip())
-        print('STDERR ' + stderr)
+        cell = self.queue.current_cell
+        assert cell.id == cell_id
+        logger.debug('stderr %s', stderr.strip())
+        cell.accumulate_stdout(stdout)
+        self.presenter.on_evaluate_cell_updated(cell_id, cell)
 
-    def _impl_sage_eval_crash(self):
+    def _impl_sage_eval_result(self, cpu_time, wall_time, cell_id):
+        """
+        RPC callback when evaluation finished successfully
+        """
+        cell = self.queue.current_cell
+        assert cell.id == cell_id
+        self.queue.pop()
+        next_cell = self.queue.current_cell
+        if next_cell is not None:
+            self.client.sage_eval(next_cell.input, cell.id)
+        self.presenter.on_evaluate_cell_finished(cell_id, cell)
+
+    def _impl_sage_eval_crash(self, cell_id):
         """
         RPC callback when the compute server crashed
         """
-        print('Compute server crashed.')
+        cell = self.queue.current_cell
+        assert cell.id == cell_id
+        self.queue.pop()
+        self.presenter.on_evaluate_cell_finished(cell_id, cell)
+        logger.warning('crashed')
+        self.restart_client()
+        next_cell = self.queue.current_cell
+        if next_cell is not None:
+            self.client.sage_eval(next_cell.input, cell.id)
+        
 
