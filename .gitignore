@@ -6,3 +6,4 @@ bin/python
 doc/_build
 __pycache__
 *.pyc
+bin/
