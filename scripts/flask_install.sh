@@ -14,3 +14,6 @@ set -e
 virtualenv bin
 
 ./bin/bin/pip install Flask-Sockets
+./bin/bin/pip install ipython
+
+

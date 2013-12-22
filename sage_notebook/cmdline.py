@@ -24,9 +24,9 @@ Handle Command Line Options and Launch the Sage Notebook
 import sys
 import os
 import importlib
-
 import logging
-logger = logging.getLogger('GUI')
+
+from .logger import logger
 
 
 
@@ -63,6 +63,12 @@ def launch_gtk(debug=False):
     logger.debug('Main loop quit')
 
 
+def launch_flask(debug=False):
+    from sage_notebook.app import Application
+    app = Application('flask')
+    app.run(debug)
+
+
 description = """
 The Sage Notebook
 """
@@ -87,7 +93,7 @@ def launch():
     args = parser.parse_args()
     if args.log is not None:
         level = getattr(logging, args.log)
-        logging.basicConfig(level=level)
+        logger.setLevel(level=level)
     if args.doctest:
         raise ValueError('run test.py for now')
     else:

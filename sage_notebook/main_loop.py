@@ -1,3 +1,40 @@
+"""
+Main Loop Abstract Base Class
+
+Unlike the Sage command line, GUI programs generally are organized
+around a main loop. You tell the gui what to display, and then give up
+control to the main loop. The main loop will then handle interaction
+with the user, and call back into your own code to process input. For
+example, you press a button and in response a function
+``View.on_button_press`` is called. 
+
+This means that we cannot wait for output from the compute server
+ourselves, we have to integrate with the main loop to make it listen
+for updates. The notebook can support any main loop implementation
+that allows to ``select()`` for additional sockets, which is a rather
+basic requirement for main loops. Implementations are
+:mod:`main_loop_gtk` and :mod:`main_loop_http`.
+"""
+
+##############################################################################
+#  Sage Notebook: A Graphical User Interface for Sage
+#  Copyright (C) 2013  Volker Braun <vbraun.name@gmail.com>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##############################################################################
+
+
 
 from sage.rpc.core.transport import TransportError
 
@@ -14,10 +51,26 @@ class MainLoopABC(object):
     def run(self, debug=None):
         """
         Run the main loop.
+
+        This method shall relinquish control to the implementation's
+        main loop and not exit until the program quits.
+
+        INPUT:
+
+        - ``debug`` -- anything. Generally will be ``None``,
+          indicating no debugging. Otherwise, run in an IPython shell
+          and make the ``debug`` value available interactively for
+          ease of debugging.
         """
         raise NotImplementedError
 
     def quit(self):
+        """
+        Force the main loop to quit.
+        
+        This method is called when the user requests the program to
+        finish, e.g., by pressing a "Quit" button.
+        """
         raise NotImplementedError
 
     def select_setup():
