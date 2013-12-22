@@ -13,7 +13,7 @@ from sage.rpc.core.monitor import MonitorClient
 class ComputeServiceClient(MonitorClient):
     
     def __init__(self, service, *args, **kwds):
-        super().__init__(*args, **kwds)
+        super(ComputeServiceClient, self).__init__(*args, **kwds)
         self.service = service
 
     def _impl_sage_eval_stdin(self, label):

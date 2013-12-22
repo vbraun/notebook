@@ -29,7 +29,7 @@ from .window import WindowABC, ModalDialogABC
 class WindowGtk(WindowABC):
 
     def __init__(self, name, presenter, builder, *args, **kwds):
-        super().__init__(name, presenter, builder, *args, **kwds)
+        super(WindowGtk, self).__init__(name, presenter, builder, *args, **kwds)
         self.window = builder.get_object(name)
         self.window.set_name(name)
 
@@ -83,6 +83,6 @@ class ModalDialogGtk(ModalDialogABC, WindowGtk):
 
         - ``object_id`` -- anything that identifies the window
         """
-        super().__init__(name, presenter, builder, parent_window, *args)
+        super(ModalDialogGtk, self).__init__(name, presenter, builder, parent_window, *args)
         if parent_window is not None:
             self.window.set_transient_for(parent_window.window)

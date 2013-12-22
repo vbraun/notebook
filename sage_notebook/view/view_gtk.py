@@ -52,7 +52,7 @@ class ViewGtk(ViewABC):
         return builder
 
     def terminate(self):
-        super().terminate()
+        super(ViewGtk, self).terminate()
         Gtk.main_quit()
 
 

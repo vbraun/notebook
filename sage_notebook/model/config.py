@@ -21,8 +21,9 @@ Container for Configuration Data
 ##############################################################################
 
 
-
+import io
 import os
+import sys
 import json
 import logging
 
@@ -34,12 +35,14 @@ class Config(object):
 
     def _save(self):
         data_json = json.JSONEncoder(indent=2).encode(self._data)
-        with open(self.settings_file, 'w', encoding='utf-8') as f:
+        if sys.version_info.major < 3:
+            data_json = data_json.decode('utf-8')
+        with io.open(self.settings_file, 'w', encoding='utf-8') as f:
             f.write(data_json)
 
     def _load(self):
         try:        
-            with open(self.settings_file, 'r', encoding='utf-8') as f:
+            with io.open(self.settings_file, 'r', encoding='utf-8') as f:
                 self._data = json.JSONDecoder().decode(f.read())
         except (EOFError, IOError, OSError, ValueError) as e:
             logging.info('loading configuration failed: %s', e)

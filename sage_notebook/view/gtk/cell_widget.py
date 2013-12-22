@@ -34,7 +34,7 @@ class CellVerticalSpacerWidget(Gtk.Misc):
     __gtype_name__ = 'CellVerticalSpacerWidget'
 
     def __init__(self, *args, **kwds):
-        super().__init__(*args, **kwds)
+        super(CellVerticalSpacerWidget, self).__init__(*args, **kwds)
         self.set_size_request(-1, 10)
 
     def do_draw(self, cr):
@@ -48,7 +48,7 @@ class CellLabelWidget(Gtk.Label):
     __gtype_name__ = 'CellLabelWidget'
     
     def __init__(self, *args, **kwds):
-        super().__init__(*args, **kwds)
+        super(CellLabelWidget, self).__init__(*args, **kwds)
         self.set_property('angle', 270)
 
 
@@ -57,7 +57,7 @@ class CellExpander(Gtk.Misc):
     __gtype_name__ = 'CellExpander'
 
     def __init__(self, *args, **kwds):
-        super().__init__(*args, **kwds)
+        super(CellExpander, self).__init__(*args, **kwds)
         self.set_size_request(40, 40)
 
     def do_draw(self, cr):
@@ -142,7 +142,7 @@ class CellWidget(Gtk.Grid):
 
     def __init__(self, key_press_event_callback, *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
-        super().__init__(*args, **kwds)
+        super(CellWidget, self).__init__(*args, **kwds)
         self.set_row_homogeneous(False)
         self.set_column_homogeneous(False)
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage

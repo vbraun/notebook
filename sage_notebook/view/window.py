@@ -112,6 +112,6 @@ class ModalDialogABC(WindowABC):
 
         - ``name`` -- anything that identifies the window.
         """
-        super().__init__(name, presenter, parent_window, *args)
+        super(ModalDialogABC, self).__init__(name, presenter, parent_window, *args)
 
     
