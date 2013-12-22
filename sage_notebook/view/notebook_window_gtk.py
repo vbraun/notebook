@@ -80,6 +80,7 @@ NOTEBOOK_STYLE_CSS = """
 
 class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
+
     def __init__(self, presenter, make_builder):
         builder = make_builder(WINDOW, TITLE, DESCRIPTION_VIEW, DESCRIPTION_MODEL, CELLS)
         WindowGtk.__init__(self, WINDOW, presenter, builder=builder)

@@ -1,7 +1,7 @@
 """
-Windows in Gtk
+Windows (Webpages) in Flask
 
-This is the Gtk3 implementation of :mod:`window`.
+This is the Flask implementation of :mod:`window`.
 """
 
 ##############################################################################
@@ -27,33 +27,16 @@ This is the Gtk3 implementation of :mod:`window`.
 from .window import WindowABC, ModalDialogABC
 
 
-
-class WindowGtk(WindowABC):
-
-    def __init__(self, name, presenter, builder, *args, **kwds):
-        super(WindowGtk, self).__init__(name, presenter, builder, *args, **kwds)
-        self.window = builder.get_object(name)
-        self.window.set_name(name)
-
-    def save_geometry(self):
-        x, y = self.window.get_size()
-        geometry = dict()
-        geometry['x'] = x
-        geometry['y'] = y
-        return geometry
-        
-    def restore_geometry(self, geometry_dict={}):
-        x = geometry_dict.get('x', 1024)
-        y = geometry_dict.get('y',  600)
-        self.window.resize(x, y)
+class WindowFlask(WindowABC):
 
     def show(self):
         """
-        Show window. 
+        Show the window. 
 
         If the window is already visible, nothing is done.
         """
-        self.window.show()
+        print('show')
+        pass
 
     def present(self):
         """
@@ -62,29 +45,30 @@ class WindowGtk(WindowABC):
         Implies :meth:`show`. If the window is already visible, this 
         method will deiconify / bring it to the foreground as necessary.
         """
-        self.window.present()
+        self.show()
 
     def hide(self):
-        self.window.hide()
+        """
+        Hide window temporarily.
+        
+        Use :meth:`show` to show the window again.
+        """
+        print('hide')
+        pass
 
     def destroy(self):
-        return self.window.destroy()
+        """
+        Hide window and release all resources.
+
+        After the window is destroyed, it is no longer possible to
+        :meth:`show` it.
+        """
+        print('destroy')
+        pass
 
 
 
 
-class ModalDialogGtk(ModalDialogABC, WindowGtk):
+class ModalDialogFlask(ModalDialogABC):
     
-
-    def __init__(self, name, presenter, builder, parent_window, *args):
-        """
-        INPUT:
-        
-         - ``parent_window`` -- A :class:`Window` instance. The dialog
-          is displayed on top of its parent.
-
-        - ``object_id`` -- anything that identifies the window
-        """
-        super(ModalDialogGtk, self).__init__(name, presenter, builder, parent_window, *args)
-        if parent_window is not None:
-            self.window.set_transient_for(parent_window.window)
+    pass

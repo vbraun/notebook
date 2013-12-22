@@ -1,5 +1,7 @@
 """
-Windows in Gtk
+The View Component in Gtk
+
+This is the Gtk3 implementation of :mod:`view`.
 """
 
 ##############################################################################

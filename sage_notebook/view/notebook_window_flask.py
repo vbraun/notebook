@@ -1,7 +1,7 @@
 """
-Gevent-Based Main Loop
+The Notebook Window
 
-This is the implementation of :mod:`main_loop` for gevent.
+This is the Flask implementation of :mod:`notebook_window`
 """
 
 
@@ -24,36 +24,14 @@ This is the implementation of :mod:`main_loop` for gevent.
 ##############################################################################
 
 import logging
-logger = logging.getLogger('GUI')
 
-import gevent
-import gevent.select
-from .main_loop import MainLoopABC
+from .window_flask import WindowFlask
+from .notebook_window import NotebookWindowABC
 
 
+class NotebookWindowFlask(NotebookWindowABC, WindowFlask):
 
-class MainLoopGevent(MainLoopABC):
+    def __init__(self, presenter):
+        WindowFlask.__init__(self, 'NotebookWindowFlask', presenter)
 
-    def __init__(self):
-        super(MainLoopGevent, self).__init__()
-        self._debug = None
-        self._quit = False
-
-    def run(self, debug=None):
-        self._debug = debug
-        g = gevent.Greenlet.spawn(self.loop, debug=debug)
-        g.join()
-
-    def loop(self, debug=None):
-        while not self._quit:
-            rlist, wlist, xlist = self.select_args()
-            rlist, wlist, xlist = gevent.select.select(rlist, wlist, xlist, 1)
-            # print('gevent loop', rlist, wlist, xlist)
-            self.select_handler(rlist, wlist, xlist)
-        
-    def quit(self):
-        self._quit = True
-
-    def select_setup():
-        raise NotImplementedError
 

@@ -40,7 +40,7 @@ class Application(object):
             from sage_notebook.view.view_gtk import ViewGtk as View
             from sage_notebook.main_loop_gtk import MainLoopGtk as MainLoop
         elif view_backend == 'flask':
-            from sage_notebook.view.view_http_flask import ViewHttpFlask as View
+            from sage_notebook.view.view_flask import ViewFlask as View
             from sage_notebook.main_loop_gevent import MainLoopGevent as MainLoop
         elif view_backend == 'text':
             from sage_notebook.view.view_text import ViewText as View

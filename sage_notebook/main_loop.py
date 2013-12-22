@@ -73,12 +73,6 @@ class MainLoopABC(object):
         """
         raise NotImplementedError
 
-    def select_setup():
-        """
-        Select for :meth:`select_args` and make sure :meth:`select_handle` is called.
-        """
-        raise NotImplementedError
-
     def select_args(self):
         idle = self._rpc_clients
         rlist = []

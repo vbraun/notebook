@@ -1,9 +1,8 @@
 """
-Gevent-Based Main Loop
+The View Component in Flask
 
-This is the implementation of :mod:`main_loop` for gevent.
+This is the Gtk3 implementation of :mod:`view`.
 """
-
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
@@ -23,37 +22,33 @@ This is the implementation of :mod:`main_loop` for gevent.
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
-import logging
-logger = logging.getLogger('GUI')
 
-import gevent
-import gevent.select
-from .main_loop import MainLoopABC
+from .view import ViewABC
+from .window_flask import WindowFlask
 
 
+class ViewFlask(ViewABC):
 
-class MainLoopGevent(MainLoopABC):
+    @property
+    def about_window(self):
+        raise NotImplementedError
 
-    def __init__(self):
-        super(MainLoopGevent, self).__init__()
-        self._debug = None
-        self._quit = False
+    @property
+    def notebook_window(self):
+        from .notebook_window_flask import NotebookWindowFlask
+        notebook = NotebookWindowFlask(self.presenter)
+        return notebook
 
-    def run(self, debug=None):
-        self._debug = debug
-        g = gevent.Greenlet.spawn(self.loop, debug=debug)
-        g.join()
+    @property
+    def preferences_window(self):
+        raise NotImplementedError
 
-    def loop(self, debug=None):
-        while not self._quit:
-            rlist, wlist, xlist = self.select_args()
-            rlist, wlist, xlist = gevent.select.select(rlist, wlist, xlist, 1)
-            # print('gevent loop', rlist, wlist, xlist)
-            self.select_handler(rlist, wlist, xlist)
+    def new_notification_dialog(self, parent, text):
+        raise NotImplementedError
+
+    def new_error_dialog(self, parent, title, text):
+        raise NotImplementedError
         
-    def quit(self):
-        self._quit = True
-
-    def select_setup():
+    def new_setup_assistant(self, parent, sage_root, callback):
         raise NotImplementedError
 

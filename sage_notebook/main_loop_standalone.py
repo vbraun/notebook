@@ -1,9 +1,10 @@
 """
-Gevent-Based Main Loop
+Stand-Alone Main Loop
 
-This is the implementation of :mod:`main_loop` for gevent.
+This is a demo implementation without integration into a third-party
+event loop. It is for documentation and doctesting purposes, but not
+actually used in the Sage notebook.
 """
-
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
@@ -23,37 +24,25 @@ This is the implementation of :mod:`main_loop` for gevent.
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
+
 import logging
 logger = logging.getLogger('GUI')
 
-import gevent
-import gevent.select
 from .main_loop import MainLoopABC
 
 
-
-class MainLoopGevent(MainLoopABC):
-
+class MainLoopStandalone(MainLoopABC):
+    
     def __init__(self):
-        super(MainLoopGevent, self).__init__()
-        self._debug = None
+        super(MainLoopStandalone, self).__init__()
         self._quit = False
 
     def run(self, debug=None):
-        self._debug = debug
-        g = gevent.Greenlet.spawn(self.loop, debug=debug)
-        g.join()
-
-    def loop(self, debug=None):
+        import socket
         while not self._quit:
             rlist, wlist, xlist = self.select_args()
-            rlist, wlist, xlist = gevent.select.select(rlist, wlist, xlist, 1)
-            # print('gevent loop', rlist, wlist, xlist)
+            rlist, wlist, xlist = select.select(rlist, wlist, xlist, 1)
             self.select_handler(rlist, wlist, xlist)
-        
+            
     def quit(self):
         self._quit = True
-
-    def select_setup():
-        raise NotImplementedError
-
