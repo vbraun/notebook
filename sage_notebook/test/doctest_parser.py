@@ -349,6 +349,8 @@ class MarkedOutput(str):
     tol = 0
     def update(self, **kwds):
         """
+        Modify settings.
+
         EXAMPLES::
 
             sage: from sage_notebook.test.doctest_parser import MarkedOutput

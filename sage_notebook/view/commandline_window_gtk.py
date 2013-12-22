@@ -27,10 +27,11 @@ from gi.repository import Gtk
 from gi.repository.GtkSource import View as GtkSourceView
 
 from .window_gtk import WindowGtk
+from .commandline_window import CommandlineWindowABC
 from .gtk.terminal_widget import TerminalWidget
 
 
-class CommandlineWindowGtk(Buildable, Window):
+class CommandlineWindowGtk(CommandlineWindowABC, WindowGtk):
 
     def __init__(self, presenter, glade_file):
         self.presenter = presenter
