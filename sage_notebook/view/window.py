@@ -39,6 +39,7 @@ class WindowABC(object):
     def presenter(self):
         return self._presenter
 
+    @property
     def name(self):
         return self._name
 

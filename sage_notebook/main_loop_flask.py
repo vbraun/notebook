@@ -1,9 +1,8 @@
 """
-The Notebook Window
+Gevent-Based Main Loop
 
-This is the Flask implementation of :mod:`notebook_window`
+This is the implementation of :mod:`main_loop` for Flask/gevent.
 """
-
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
@@ -24,14 +23,17 @@ This is the Flask implementation of :mod:`notebook_window`
 ##############################################################################
 
 import logging
-
-from .window_flask import WindowFlask
-from .notebook_window import NotebookWindowABC
+logger = logging.getLogger('GUI')
 
 
-class NotebookWindowFlask(NotebookWindowABC, WindowFlask):
 
-    def __init__(self, presenter):
-        WindowFlask.__init__(self, 'nb', presenter)
+from .main_loop_gevent import MainLoopGevent
 
 
+class MainLoopFlask(MainLoopGevent):
+
+    def add_view(self, view):
+        self.flask_app = view.flask_app
+        
+    def run_forever(self):
+        self.flask_app.run()

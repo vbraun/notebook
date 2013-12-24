@@ -23,11 +23,11 @@ This is the Flask implementation of :mod:`window`.
 ##############################################################################
 
 
-
 from .window import WindowABC, ModalDialogABC
+import flask
+import flask.views
 
-
-class WindowFlask(WindowABC):
+class WindowFlask(WindowABC, flask.views.View):
 
     def show(self):
         """
@@ -66,6 +66,8 @@ class WindowFlask(WindowABC):
         print('destroy')
         pass
 
+    def dispatch_request(self):
+        return render_template(self.name + '.html')
 
 
 

@@ -58,15 +58,15 @@ def check_gtk_prerequisites():
 def launch_gtk(debug=False):
     check_gtk_prerequisites()
     from sage_notebook.app import Application
-    app = Application('gtk')
-    app.run(debug)
+    application = Application('gtk')
+    application.run(debug)
     logger.debug('Main loop quit')
 
 
 def launch_flask(debug=False):
     from sage_notebook.app import Application
-    app = Application('flask')
-    app.run(debug)
+    application = Application('flask')
+    application.run(debug)
 
 
 description = """

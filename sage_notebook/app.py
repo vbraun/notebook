@@ -41,9 +41,10 @@ class Application(object):
             from sage_notebook.main_loop_gtk import MainLoopGtk as MainLoop
         elif view_backend == 'flask':
             from sage_notebook.view.view_flask import ViewFlask as View
-            from sage_notebook.main_loop_gevent import MainLoopGevent as MainLoop
+            from sage_notebook.main_loop_flask import MainLoopFlask as MainLoop
         elif view_backend == 'text':
             from sage_notebook.view.view_text import ViewText as View
+            from sage_notebook.main_loop_gevent import MainLoopGevent as MainLoop
         self.presenter = Presenter(View, Model, MainLoop)
         self.view = self.presenter.view
         self.model = self.presenter.model

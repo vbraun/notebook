@@ -1,9 +1,8 @@
 """
-The Notebook Window
+About Window
 
-This is the Flask implementation of :mod:`notebook_window`
+This is the Flask implementation of :mod:`about_window`
 """
-
 
 ##############################################################################
 #  Sage Notebook: A Graphical User Interface for Sage
@@ -22,16 +21,17 @@ This is the Flask implementation of :mod:`notebook_window`
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
-
-import logging
-
+ 
+from .about_window import AboutWindowABC
 from .window_flask import WindowFlask
-from .notebook_window import NotebookWindowABC
 
 
-class NotebookWindowFlask(NotebookWindowABC, WindowFlask):
+class AboutWindowFlask(AboutWindowABC, WindowFlask):
 
     def __init__(self, presenter):
-        WindowFlask.__init__(self, 'nb', presenter)
+        NAME = 'about'
+        WindowFlask.__init__(self, NAME, presenter)
 
+    def on_about_window_response(self, widget, data=None):
+        self.presenter.hide_about_window()
 

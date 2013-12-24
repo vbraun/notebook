@@ -45,6 +45,16 @@ class MainLoopABC(object):
     def __init__(self):
         self._rpc_clients = []
 
+    def add_view(self, view):
+        """
+        Initialize the view
+
+        The main loop might need to query the view for what to run
+        (e.g. the Flask app object), this is a hook just for that
+        purpos.
+        """
+        pass
+
     def add_rpc_clients(self, clients):
         self._rpc_clients.extend(clients)
 

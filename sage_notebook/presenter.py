@@ -34,6 +34,7 @@ class Presenter(object):
         self.main_loop = main_loop_class()
         self.view = view_class(self)
         self.model = model_class(self)
+        self.main_loop.add_view(self.view)
         self.main_loop.add_rpc_clients(self.model.get_rpc_clients())
         if self.model.config.sage_root is None:
             self.show_setup_assistant(None, None, self.on_setup_assistant_first_run_finished)

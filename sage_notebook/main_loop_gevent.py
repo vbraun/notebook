@@ -41,8 +41,11 @@ class MainLoopGevent(MainLoopABC):
 
     def run(self, debug=None):
         self._debug = debug
-        g = gevent.Greenlet.spawn(self.loop, debug=debug)
-        g.join()
+        self._greenlet = gevent.Greenlet.spawn(self.loop, debug=debug)
+        self.run_forever()
+
+    def run_forever(self):
+        self._greenlet.join()
 
     def loop(self, debug=None):
         while not self._quit:
