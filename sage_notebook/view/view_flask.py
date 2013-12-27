@@ -22,7 +22,7 @@ This is the Gtk3 implementation of :mod:`view`.
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
-
+import os
 from flask import Flask
 
 from .view import ViewABC
@@ -35,9 +35,10 @@ class ViewFlask(ViewABC):
     
     def __init__(self, presenter):
         super(ViewFlask, self).__init__(presenter)
-        self._app = app = Flask(__name__) 
+        static = os.path.join('flask', 'static')
+        template = os.path.join('flask', 'templates')
+        self._app = app = Flask(__name__, static_folder=static, template_folder=template) 
         app.config['DEBUG'] = True
-        app.config['SERVER_NAME'] = 'localhost:5000'
 
     @property
     def flask_app(self):
@@ -54,8 +55,7 @@ class ViewFlask(ViewABC):
     def notebook_window(self):
         from .notebook_window_flask import NotebookWindowFlask
         notebook = NotebookWindowFlask(self.presenter)
-        self.flask_app.add_url_rule('/' + notebook.name, 
-                                    view_func=NotebookWindowFlask.as_view('myview'))
+        notebook.add_url_rule_to(self.flask_app)
         return notebook
 
     @property

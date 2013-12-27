@@ -25,13 +25,20 @@ This is the Flask implementation of :mod:`notebook_window`
 
 import logging
 
-from .window_flask import WindowFlask
+from .window_flask import WindowFlaskSocket
 from .notebook_window import NotebookWindowABC
 
 
-class NotebookWindowFlask(NotebookWindowABC, WindowFlask):
+class NotebookWindowFlask(NotebookWindowABC, WindowFlaskSocket):
+
+    def socket(self, ws):
+        print ws
+        while True:
+            message = ws.receive()
+            print(message)
+            ws.send(message)
 
     def __init__(self, presenter):
-        WindowFlask.__init__(self, 'nb', presenter)
+        WindowFlaskSocket.__init__(self, 'notebook', presenter)
 
 

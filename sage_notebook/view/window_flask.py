@@ -2,6 +2,11 @@
 Windows (Webpages) in Flask
 
 This is the Flask implementation of :mod:`window`.
+
+In the Sage notebook, a window is a long-lived object. We do not free
+the resources when a window is closed to avoid having to reconstruct
+the GUI when it is reopened.
+
 """
 
 ##############################################################################
@@ -25,9 +30,29 @@ This is the Flask implementation of :mod:`window`.
 
 from .window import WindowABC, ModalDialogABC
 import flask
-import flask.views
 
-class WindowFlask(WindowABC, flask.views.View):
+
+
+class WindowFlask(WindowABC):
+    """
+    Flask Window
+    """
+
+    @property
+    def url(self):
+        return '/' + self.name + '/'
+        
+    @property
+    def endpoint(self):
+        """
+        The Endpoint
+
+        An endpoint is a name (string) that can be used to look up the
+        url using ``url_for(endpoint)`` in the Flask routing
+        system. In the simplest examples it is the name of the view
+        function, but it can be anything really.
+        """
+        return self.name
 
     def show(self):
         """
@@ -67,7 +92,56 @@ class WindowFlask(WindowABC, flask.views.View):
         pass
 
     def dispatch_request(self):
-        return render_template(self.name + '.html')
+        return flask.render_template(self.name + '.html')        
+
+    def add_url_rule_to(self, app):
+        app.add_url_rule(self.url, self.endpoint, self.dispatch_request)
+
+
+
+class WindowFlaskSocket(WindowFlask):
+    """
+    Flask + Websocket Window
+    """
+
+    @property
+    def url_socket(self):
+        return self.url + 'ws'
+        
+    @property
+    def endpoint_socket(self):
+        """
+        Return the Endpoint
+
+        An endpoint is a name (string) that can be used to look up the
+        url using ``url_for(endpoint)`` in the Flask routing
+        system. In the simplest examples it is the name of the view
+        function, but it can be anything really.
+        """
+        return self.name + '_ws'
+
+    def socket(self, ws):
+        while True:
+            print 'socket loop'
+            message = ws.receive()
+            if message is None:
+                print "got none"
+                continue
+            print 'msg =', message
+            ws.send(message)
+
+    def dispatch_socket(self):
+        req = flask.request
+        print 'dispatch socket', req
+        if req.environ.get('wsgi.websocket'):
+            ws = req.environ['wsgi.websocket']
+            self.socket(ws)
+        else:
+            flask.abort(400, 'Expected WebSocket request.')
+
+    def add_url_rule_to(self, app):
+        super(WindowFlaskSocket, self).add_url_rule_to(app)
+        app.add_url_rule(self.url_socket, self.endpoint_socket, self.dispatch_socket)
 
 
 

@@ -25,6 +25,8 @@ This is the implementation of :mod:`main_loop` for Flask/gevent.
 import logging
 logger = logging.getLogger('GUI')
 
+import gevent
+from geventwebsocket.handler import WebSocketHandler
 
 
 from .main_loop_gevent import MainLoopGevent
@@ -34,6 +36,18 @@ class MainLoopFlask(MainLoopGevent):
 
     def add_view(self, view):
         self.flask_app = view.flask_app
-        
+
+    def run(self, debug=None):
+        self._debug = debug
+        #self._sage_greenlet = gevent.Greenlet.spawn(self.loop, debug=debug)
+        self._httpd_greenlet = gevent.Greenlet.spawn(self.httpd, debug=debug)
+        self.run_forever()
+
     def run_forever(self):
-        self.flask_app.run()
+        #self._sage_greenlet.join()
+        self._httpd_greenlet.join()
+
+    def httpd(self, debug=None):
+        httpd = gevent.pywsgi.WSGIServer(
+            ('localhost', 5000), self.flask_app, handler_class=WebSocketHandler)
+        httpd.serve_forever()
