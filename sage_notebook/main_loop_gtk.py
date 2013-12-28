@@ -46,7 +46,7 @@ class MainLoopGtk(MainLoopABC):
     def debug_shell_gtk(self, app):
         from IPython.lib.inputhook import enable_gtk3
         enable_gtk3()
-        from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+        from IPython.terminal.ipapp import TerminalIPythonApp
         ip = TerminalIPythonApp.instance()
         ip.initialize(argv=[])
         ip.shell.enable_gui('gtk3')

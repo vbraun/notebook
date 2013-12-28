@@ -75,7 +75,7 @@ class ViewGtk(ViewABC):
     def notebook_window(self):
         from .notebook_window_gtk import NotebookWindowGtk
         notebook = NotebookWindowGtk(self.presenter, self.make_builder)
-        geometry = self.presenter.get_saved_geometry(notebook.name())
+        geometry = self.presenter.get_saved_geometry(notebook.name)
         notebook.restore_geometry(geometry)
         return notebook
         

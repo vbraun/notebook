@@ -56,6 +56,15 @@ class Application(object):
         else:
             self.main_loop.run()
             
-
-
+    def __repr__(self):
+        s = """
+        This is the main application object. You probably want to look at
+        
+        * app.view        All of the GUI 
+        * app.model       Underlying data model
+        * app.presenter   The presenter tying gui to the model  
+        * app.main_loop   Main loop implementation suitable for GUI
+        """
+        import textwrap
+        return textwrap.dedent(s)
 

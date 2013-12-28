@@ -37,7 +37,8 @@ class Presenter(object):
         self.main_loop.add_view(self.view)
         self.main_loop.add_rpc_clients(self.model.get_rpc_clients())
         if self.model.config.sage_root is None:
-            self.show_setup_assistant(None, None, self.on_setup_assistant_first_run_finished)
+            callback = self.on_setup_assistant_first_run_finished
+            self.show_setup_assistant(None, None, callback)
         else:
             self.show_notebook_window()
  

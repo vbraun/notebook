@@ -31,14 +31,31 @@ from .notebook_window import NotebookWindowABC
 
 class NotebookWindowFlask(NotebookWindowABC, WindowFlaskSocket):
 
-    def socket(self, ws):
-        print ws
-        while True:
-            message = ws.receive()
-            print(message)
-            ws.send(message)
-
     def __init__(self, presenter):
         WindowFlaskSocket.__init__(self, 'notebook', presenter)
 
+    def on_receive(self, message):
+        self.on_notebook_evaluate_cell('test_id', message)
 
+    def set_output(self, cell):
+        output = cell.stdout + '\n' + cell.stderr
+        self.send(output)
+
+    def cell_busy(self, cell):
+        """
+        Update the view of the cell to display a running computation.
+        """
+        self.send('busy')
+
+    def cell_update(self, cell):
+        """
+        Update the view of the cell to display a partial result.
+        """
+        self.set_output(cell)
+        
+    def cell_finished(self, cell):
+        """
+        Update the view of the cell to display the final result
+        """
+        self.set_output(cell)
+        self.send('finished')

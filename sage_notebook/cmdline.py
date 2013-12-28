@@ -63,7 +63,26 @@ def launch_gtk(debug=False):
     logger.debug('Main loop quit')
 
 
+def check_flask_prerequisites():
+    try:
+        import flask
+    except ImportError:
+        logger.critical('Missing dependency: Flask.')
+        sys.exit(1)
+    try:
+        import gevent
+    except ImportError:
+        logger.critical('Missing dependency: gevent.')
+        sys.exit(1)
+    try:
+        import geventwebsocket
+    except ImportError:
+        logger.critical('Missing dependency: gevent-WebSocket.')
+        sys.exit(1)
+
+
 def launch_flask(debug=False):
+    check_flask_prerequisites()
     from sage_notebook.app import Application
     application = Application('flask')
     application.run(debug)
@@ -84,6 +103,9 @@ def run_doctests(args):
 def launch():
     from argparse import ArgumentParser
     parser = ArgumentParser(description=description)
+    parser.add_argument('--ui', dest='ui', type=str,
+                        default='gtk', help=
+                        'User interface (either "gtk" or "flask")')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         default=False, help='debug')
     parser.add_argument('--doctest', dest='doctest', action='store_true',
@@ -96,5 +118,9 @@ def launch():
         logger.setLevel(level=level)
     if args.doctest:
         raise ValueError('run test.py for now')
-    else:
+    elif args.ui == 'gtk':
         launch_gtk(debug=args.debug)
+    elif args.ui == 'flask':        
+        launch_flask(debug=args.debug)
+    else:
+        raise ValueError('unknown UI option: {0}'.format(args.ui))

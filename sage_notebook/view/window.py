@@ -44,7 +44,7 @@ class WindowABC(object):
         return self._name
 
     def __repr__(self):
-        return 'Window "{0}"'.format(self.name())
+        return 'Window "{0}"'.format(self.name)
 
     def get_geometry(self):
         """

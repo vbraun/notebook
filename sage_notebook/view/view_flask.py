@@ -27,7 +27,7 @@ from flask import Flask
 
 from .view import ViewABC
 from .window_flask import WindowFlask
-
+from sage_notebook.misc.cached_property import cached_property
 
 
 
@@ -47,18 +47,18 @@ class ViewFlask(ViewABC):
         """
         return self._app
 
-    @property
+    @cached_property
     def about_window(self):
         raise NotImplementedError
 
-    @property
+    @cached_property
     def notebook_window(self):
         from .notebook_window_flask import NotebookWindowFlask
         notebook = NotebookWindowFlask(self.presenter)
         notebook.add_url_rule_to(self.flask_app)
         return notebook
 
-    @property
+    @cached_property
     def preferences_window(self):
         raise NotImplementedError
 

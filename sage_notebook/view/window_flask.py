@@ -28,9 +28,13 @@ the GUI when it is reopened.
 ##############################################################################
 
 
-from .window import WindowABC, ModalDialogABC
-import flask
+import logging
+logger = logging.getLogger('GUI')
 
+import flask
+from geventwebsocket import WebSocketError
+
+from .window import WindowABC, ModalDialogABC
 
 
 class WindowFlask(WindowABC):
@@ -99,10 +103,21 @@ class WindowFlask(WindowABC):
 
 
 
+class SocketDisconnectedException(Exception):
+    pass
+
+
 class WindowFlaskSocket(WindowFlask):
     """
     Flask + Websocket Window
     """
+
+    def __init__(self, name, presenter, *args):
+        """
+        Web page + Websocket
+        """
+        super(WindowFlaskSocket, self).__init__(name, presenter, *args)
+        self._ws = None
 
     @property
     def url_socket(self):
@@ -120,24 +135,40 @@ class WindowFlaskSocket(WindowFlask):
         """
         return self.name + '_ws'
 
-    def socket(self, ws):
-        while True:
-            print 'socket loop'
-            message = ws.receive()
-            if message is None:
-                print "got none"
-                continue
-            print 'msg =', message
-            ws.send(message)
+    def send(self, message):
+        """
+        Send a message on the websocket.
+        """
+        if self._ws is None:
+            raise SocketDisconnectedException()
+        logger.debug('Sending websocket message: %s', message)
+        self._ws.send(message)
+
+    def on_receive(self, message):
+        """
+        Callback for receiving a message on the websocket
+
+        You should override this method to receive messages
+        """
+        logger.debug('Received websocket message: %s', message)
 
     def dispatch_socket(self):
         req = flask.request
-        print 'dispatch socket', req
         if req.environ.get('wsgi.websocket'):
-            ws = req.environ['wsgi.websocket']
-            self.socket(ws)
+            self._ws = ws = req.environ['wsgi.websocket']
+            logger.debug('Opening websocket')
+            self.dispatch_socket_read_loop(ws)
+            logger.debug('Closing websocket')
+            return flask.Response()
         else:
-            flask.abort(400, 'Expected WebSocket request.')
+            return flask.abort(400, 'Expected WebSocket request.')
+
+    def dispatch_socket_read_loop(self, ws):
+        while True:
+            message = ws.receive()
+            if message is None:
+                return   # WebSocket was closed
+            self.on_receive(message)
 
     def add_url_rule_to(self, app):
         super(WindowFlaskSocket, self).add_url_rule_to(app)
