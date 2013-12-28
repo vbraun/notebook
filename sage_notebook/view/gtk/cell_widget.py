@@ -205,7 +205,7 @@ class CellWidget(Gtk.Grid):
         return label, view
 
     def set_output(self, cell):
-        self.out_buffer.set_text(cell.stdout + '\n' + cell.stderr)
+        self.out_buffer.set_text(cell.as_plain_text())
         
     def set_language(self, language='python'):
         mgr = GtkSource.LanguageManager()

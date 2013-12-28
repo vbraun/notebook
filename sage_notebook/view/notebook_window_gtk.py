@@ -61,6 +61,9 @@ NOTEBOOK_STYLE_CSS = """
     background: white;
 }}
 
+#{cells} * GtkSourceView {{
+}}
+
 #{cells} CellLabelWidget {{
     color: grey;
     font-size: 90%;
@@ -159,7 +162,8 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         widget.set_output(cell)
         
     def on_notebook_cell_key_press_event(self, widget, event):
-        if (event.keyval == Gdk.KEY_Return) and (event.state & Gdk.ModifierType.CONTROL_MASK):
+        if (event.keyval == Gdk.KEY_Return) and \
+           (event.state & Gdk.ModifierType.CONTROL_MASK):
             cell_id = 1
             input_string = self.current_cell_view.get_input()
             print(cell_id, input_string, widget)

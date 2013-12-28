@@ -27,6 +27,8 @@ import logging
 from .config import Config
 from .compute_service import ComputeService
 
+from .worksheet import Worksheet
+
 
 class Model:
     
@@ -35,6 +37,7 @@ class Model:
         c = Config()
         self.config = c
         self.compute = ComputeService(presenter)
+        self.worksheet = Worksheet.create_default()
 
     def get_rpc_clients(self):
         return [self.compute.rpc_client]
@@ -56,5 +59,4 @@ class Model:
         return SageInstallation(sage_root)
 
     def get_cell(self, cell_id):
-        from .worksheet import Cell
-        return Cell()
+        return self.worksheet.get_cell(cell_id)

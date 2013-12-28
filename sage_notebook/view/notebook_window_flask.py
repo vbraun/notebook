@@ -38,8 +38,7 @@ class NotebookWindowFlask(NotebookWindowABC, WindowFlaskSocket):
         self.on_notebook_evaluate_cell('test_id', message)
 
     def set_output(self, cell):
-        output = cell.stdout + '\n' + cell.stderr
-        self.send(output)
+        self.send(cell.as_plain_text())
 
     def cell_busy(self, cell):
         """

@@ -45,12 +45,47 @@ class Cell(object):
     def stderr(self):
         return self._stderr
 
+    def as_plain_text(self):
+        result = self._stdout.rstrip()
+        if len(self._stderr) > 0:
+            result += self._stderr.rstrip()
+        return result
 
 
 class Worksheet(object):
 
     def __init__(self):
-        pass
+        self._cells_dict = dict()
+        self._order = list()
+
+    @static_method
+    def create_default(cls):
+        ws = cls()
+        c = Cell()
+        c.input = '123'
+        ws.append(c)
+        c.input = '123^2'
+        ws.append(c)
+        c.input = 'def f(x):\n    return 1'
+        ws.append(c)
+        return ws
         
+    def insert(self, pos, cell):
+        self._cells_dict[cell.id] = cell
+        self._order.insert(pos, cell.id)
+
+    def append(self, cell):
+        self.insert(self.n_cells(), cell)
+
+    def n_cells(self):
+        return len(self._cells)
+
+    __len__ = n_cells
+
     def get_cell(self, cell_id):
-        pass
+        return self._cells_dict[cell_id]
+        
+    def get_indent(self, cell_id):
+        return 0
+    
+        
