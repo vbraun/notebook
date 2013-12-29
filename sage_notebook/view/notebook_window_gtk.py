@@ -56,9 +56,22 @@ NOTEBOOK_STYLE_CSS = """
     font-size: 80%;
 }}
 
-#{cells} *  {{
-    color: black;
-    background: white;
+#{cells} * GtkTextView {{
+}}
+
+#{cells} * CellExpander,
+#{cells} * CellLabelWidget,
+#{cells} CellVerticalSpacerWidget {{
+    background-color: @theme_base_color;
+}}
+
+#{cells} * CellExpander:backdrop,
+#{cells} * CellLabelWidget:backdrop,
+#{cells} CellVerticalSpacerWidget:backdrop {{
+    background-image: none;
+    background-color: @theme_unfocused_base_color;
+    box-shadow: none;
+    transition: all 200ms ease-out;
 }}
 
 #{cells} * GtkSourceView {{

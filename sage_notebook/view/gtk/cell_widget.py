@@ -39,7 +39,8 @@ class CellVerticalSpacerWidget(Gtk.Misc):
 
     def do_draw(self, cr):
         # paint background
-        bg_color = self.get_style_context().get_background_color(Gtk.StateFlags.NORMAL)
+        bg_color = self.get_style_context().get_background_color(
+            self.get_state_flags())
         cr.set_source_rgba(*list(bg_color))
         cr.paint()
 
@@ -64,7 +65,8 @@ class CellExpander(Gtk.Misc):
         allocation = self.get_allocation()
 
         # paint background
-        bg_color = self.get_style_context().get_background_color(Gtk.StateFlags.NORMAL)
+        bg_color = self.get_style_context().get_background_color(
+            self.get_state_flags())
         cr.set_source_rgba(*list(bg_color))
         cr.paint()
        
