@@ -75,6 +75,7 @@ class ViewABC(object):
         self._open_windows.add(window)
         self._current_window = window
         window.present()
+        return window
 
     def _hide_window(self, window):
         """
@@ -123,7 +124,7 @@ class ViewABC(object):
         
     def show_about_window(self):
         about = self.about_window
-        self._show_window(about)
+        return self._show_window(about)
 
     def hide_about_window(self):
         about = self.about_window
@@ -139,7 +140,7 @@ class ViewABC(object):
         
     def show_notebook_window(self):
         nb = self.notebook_window
-        self._show_window(nb)
+        return self._show_window(nb)
 
     def hide_notebook_window(self):
         nb = self.notebook_window
@@ -155,7 +156,7 @@ class ViewABC(object):
     def show_preferences_window(self, config):
         prefs = self.preference_window
         prefs.update_from(config)
-        self._show_window(prefs)
+        return self._show_window(prefs)
 
     def hide_preferences_window(self):
         prefs = self.preferences_window

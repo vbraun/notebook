@@ -12,14 +12,34 @@ class Cell(object):
             self._id = uuid.uuid4().hex
         else:
             self._id = cell_id
+        self._index = None
         self._input = None
         self.clear_output()
+
+    def __repr__(self):
+        return 'Cell id {0}'.format(self.id)
 
     @property
     def id(self):
         return self._id
     
+    @property
+    def index(self):
+        """
+        Return the ``n`` in ``In[n]/Out[n]``
+        
+        OUTPUT:
+
+        An integer or ``None``.
+        """
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = value
+        
     def clear_output(self):
+        self._index = None
         self._stdout = ''
         self._stderr = ''
         
@@ -58,15 +78,23 @@ class Worksheet(object):
         self._cells_dict = dict()
         self._order = list()
 
-    @static_method
+    def __repr__(self):
+        return 'Worksheet containing {0} cells'.format(self.n_cells())
+
+    @classmethod
     def create_default(cls):
         ws = cls()
         c = Cell()
         c.input = '123'
         ws.append(c)
+        c = Cell()
         c.input = '123^2'
         ws.append(c)
+        c = Cell()
         c.input = 'def f(x):\n    return 1'
+        ws.append(c)
+        c = Cell()
+        c.input = '# test'
         ws.append(c)
         return ws
         
@@ -78,7 +106,7 @@ class Worksheet(object):
         self.insert(self.n_cells(), cell)
 
     def n_cells(self):
-        return len(self._cells)
+        return len(self._cells_dict)
 
     __len__ = n_cells
 
@@ -89,3 +117,6 @@ class Worksheet(object):
         return 0
     
         
+    def __iter__(self):
+        for cell_id in self._order:
+            yield self._cells_dict[cell_id]

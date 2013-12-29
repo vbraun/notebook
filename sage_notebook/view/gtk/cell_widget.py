@@ -163,9 +163,15 @@ class CellWidget(Gtk.Grid):
         #self.pack_start(i, expand, fill, 0)
         #self.pack_end(o, expand, fill, 0)
 
-    def set_index(self, i):
-        self.in_label.set_text('In[{0}]'.format(i))
-        self.out_label.set_text('Out[{0}]'.format(i))
+    def set_index(self, index):
+        if index is None:
+            self.in_label.hide()
+            self.out_label.hide()
+        else:
+            self.in_label.set_text('In[{0}]'.format(index))
+            self.out_label.set_text('Out[{0}]'.format(index))
+            self.in_label.show()
+            self.out_label.show()
 
     def _make_input(self):
         label = self.in_label = CellLabelWidget()
@@ -205,6 +211,7 @@ class CellWidget(Gtk.Grid):
         return label, view
 
     def set_output(self, cell):
+        self.set_index(cell.index)
         self.out_buffer.set_text(cell.as_plain_text())
         
     def set_language(self, language='python'):
@@ -218,4 +225,26 @@ class CellWidget(Gtk.Grid):
         #view.set_show_line_numbers(True)
         view.set_show_right_margin(False)
 
+    def update(self, cell):
+        """
+        Update view to display ``cell``
+
+        This must be called at least once before the cell is actually
+        displayed. On subsequent calls, it replaces all data from the
+        previous cell. This allows you to reuse :class:`CellWidget`
+        instances.
+
+        INPUT:
+
+        - ``cell`` -- a (potentially) entirely different notebook
+          cell.
+        """
+        self.set_index(cell.index)
+        self.set_input(cell.input)
+        self.set_output(cell)
+        self._id = cell.id
+
+    @property
+    def id(self):
+        return self._id
     

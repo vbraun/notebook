@@ -37,17 +37,27 @@ class NotebookWindowABC(WindowABC):
         """
         Update the view of the cell to display a running computation.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def cell_update(self, cell):
         """
         Update the view of the cell to display a partial result.
         """
-        raise NotImplemented
+        raise NotImplementedError
         
     def cell_finished(self, cell):
         """
         Update the view of the cell to display the final result
         """
-        raise NotImplemented
+        raise NotImplementedError
         
+    def set_worksheet(self, worksheet):
+        """
+        Switch display to the worksheet.
+
+        INPUT:
+
+        - ``worksheet`` -- A
+          :class:`~sage_notebok.model.worksheet.Worksheet`.
+        """
+        raise NotImplementedError

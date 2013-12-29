@@ -107,6 +107,7 @@ class ComputeService(object):
         logger.setLevel(logging.DEBUG)
 
     def start_client(self):
+        self._eval_counter = 0
         interface = 'localhost'
         cookie = self._random_cookie()
         uri = 'tcp://localhost:0'
@@ -123,6 +124,7 @@ class ComputeService(object):
         #    time.sleep(0.01)
         
     def restart_client(self):
+        self._eval_counter = 0
         raise NotImplementedError
 
     @property
@@ -209,6 +211,8 @@ class ComputeService(object):
         RPC callback when evaluation finished successfully
         """
         cell = self.queue.current_cell
+        cell.index = self._eval_counter
+        self._eval_counter += 1
         assert cell.id == cell_id
         self.queue.pop()
         next_cell = self.queue.current_cell
@@ -221,6 +225,7 @@ class ComputeService(object):
         RPC callback when the compute server crashed
         """
         cell = self.queue.current_cell
+        cell.index = None
         assert cell.id == cell_id
         self.queue.pop()
         self.presenter.on_evaluate_cell_finished(cell_id, cell)

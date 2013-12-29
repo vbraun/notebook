@@ -37,7 +37,7 @@ class Model:
         c = Config()
         self.config = c
         self.compute = ComputeService(presenter)
-        self.worksheet = Worksheet.create_default()
+        self.worksheet = None
 
     def get_rpc_clients(self):
         return [self.compute.rpc_client]
@@ -60,3 +60,31 @@ class Model:
 
     def get_cell(self, cell_id):
         return self.worksheet.get_cell(cell_id)
+
+    def load_worksheet(self):
+        self.worksheet = ws = Worksheet.create_default()
+        return ws
+
+    # Evaluation of cells
+
+    def eval_cell_init(self, cell_id, input_string):
+        """
+        Prepare the cell for evaluation
+        """
+        cell = self.get_cell(cell_id)
+        cell.input = input_string
+        cell.index = None
+        self.compute.eval(cell)
+        return cell
+
+    def eval_cell_update(self, cell):
+        """
+        We got partial output for ``cell``.
+        """
+        pass
+
+    def eval_cell_finished(self, cell):
+        """
+        Evaluation finished
+        """
+        pass

@@ -40,7 +40,7 @@ class Presenter(object):
             callback = self.on_setup_assistant_first_run_finished
             self.show_setup_assistant(None, None, callback)
         else:
-            self.show_notebook_window()
+            self.show_notebook_window_worksheet()
  
     def save_geometry(self):
         geometry = self.model.config.window_geometry
@@ -67,9 +67,7 @@ class Presenter(object):
         Initiate evaluating a notebook cell
         """
         logger.info('evaluating cell %s', cell_id)
-        cell = self.model.get_cell(cell_id)
-        cell.input = input_string
-        self.model.compute.eval(cell)
+        cell = self.model.eval_cell_init(cell_id, input_string)
         self.view.notebook_window.cell_busy(cell)
 
     def on_evaluate_cell_updated(self, cell_id, cell):
@@ -82,6 +80,7 @@ class Presenter(object):
         not after a subsequent :meth:`on_evaluate_cell_finish`.
         """
         logger.debug('updating cell %s', cell_id)
+        self.model.eval_cell_update(cell)
         self.view.notebook_window.cell_update(cell)
 
     def on_evaluate_cell_finished(self, cell_id, cell):
@@ -97,7 +96,17 @@ class Presenter(object):
         up with a :meth:`on_evaluate_cell_finished`.
         """
         logger.info('finished cell %s', cell_id)
+        self.model.eval_cell_finished(cell)
         self.view.notebook_window.cell_finished(cell)
+
+    def show_notebook_window_worksheet(self):
+        """
+        Load & display a new worksheet.
+        """
+        # TODO: load different worksheets
+        model = self.model.load_worksheet()
+        view = self.show_notebook_window()
+        view.set_worksheet(model)
 
     def show_notebook_window(self):
         return self.view.show_notebook_window()
@@ -190,7 +199,7 @@ class Presenter(object):
             :meth:`destroy_modal_dialog` after the callback returns.
         """
         self.set_sage_installation(sage_install)
-        self.show_notebook_window()
+        self.show_notebook_window_worksheet()
         
 
         

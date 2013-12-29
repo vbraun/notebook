@@ -53,7 +53,7 @@ NOTEBOOK_STYLE_CSS = """
 }}
 
 #{description} {{
-    font-size: 50%;
+    font-size: 80%;
 }}
 
 #{cells} *  {{
@@ -68,8 +68,6 @@ NOTEBOOK_STYLE_CSS = """
     color: grey;
     font-size: 90%;
 }}
-
-
 """.format(
     window=WINDOW, 
     title=TITLE, 
@@ -110,8 +108,9 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
     def _init_description(self, view, model):        
         self.desc_view = view
         self.desc_model = model
-        font_description = Pango.FontDescription('Lucida Sans 10')
-        view.modify_font(font_description)
+        view.set_name(DESCRIPTION_VIEW)
+        #font_description = Pango.FontDescription('Lucida Sans 10')
+        #view.modify_font(font_description)
         view.set_border_window_size(Gtk.TextWindowType.BOTTOM, 10)
 
 
@@ -119,26 +118,37 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         self.cells_view = cells
         self.cells_model = []
         cells.set_name(CELLS)
-        expand = False
-        fill = True
-        key_cb = self.on_notebook_cell_key_press_event
-        self.cells_model = c1, c2, c3 = CellWidget(key_cb), CellWidget(key_cb), CellWidget(key_cb)
-        self.current_cell_view = c1
-        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        cells.pack_start(c1, expand, fill, 0)
-        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        cells.pack_start(c2, expand, fill, 0)
-        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        cells.pack_start(c3, expand, fill, 0)
-        cells.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        c1.set_index(1)
-        c2.set_index(2)
-        c3.set_index(3)
         cells.show_all()
 
+    def set_worksheet(self, worksheet):
+        """
+        Switch display to the worksheet.
+
+        INPUT:
+
+        - ``worksheet`` -- A
+          :class:`~sage_notebok.model.worksheet.Worksheet`.
+        """
+        view = self.cells_view
+        model = self.cells_model
+        key_cb = self.on_notebook_cell_key_press_event
+        expand = False
+        fill = True
+        key_kb = self.on_notebook_cell_key_press_event
+        view.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
+        for cell in worksheet:
+            c = CellWidget(key_kb)
+            c.update(cell)
+            model.append(c)
+            view.pack_start(c, expand, fill, 0)
+            view.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
+        view.show_all()
 
     def find_cell_widget(self, cell):
-        return self.cells_model[0]
+        for widget in self.cells_model:
+            if widget.id == cell.id:
+                return widget
+        raise IndexError('no widget for cell')
 
     def cell_busy(self, cell):
         """
@@ -161,11 +171,15 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         widget = self.find_cell_widget(cell)
         widget.set_output(cell)
         
+        
     def on_notebook_cell_key_press_event(self, widget, event):
         if (event.keyval == Gdk.KEY_Return) and \
            (event.state & Gdk.ModifierType.CONTROL_MASK):
-            cell_id = 1
-            input_string = self.current_cell_view.get_input()
+            focus = self.cells_view.get_focus_child()
+            if not isinstance(focus, CellWidget):
+                return False
+            cell_id = focus.id
+            input_string = focus.get_input()
             print(cell_id, input_string, widget)
             self.on_notebook_evaluate_cell(cell_id, input_string)
             return True
