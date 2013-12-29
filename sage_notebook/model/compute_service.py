@@ -203,7 +203,7 @@ class ComputeService(object):
         cell = self.queue.current_cell
         assert cell.id == cell_id
         logger.debug('stderr %s', stderr.strip())
-        cell.accumulate_stdout(stdout)
+        cell.accumulate_stderr(stderr)
         self.presenter.on_evaluate_cell_updated(cell_id, cell)
 
     def _impl_sage_eval_result(self, cpu_time, wall_time, cell_id):

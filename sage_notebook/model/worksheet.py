@@ -94,7 +94,7 @@ class Worksheet(object):
         c.input = 'def f(x):\n    return 1'
         ws.append(c)
         c = Cell()
-        c.input = '# test'
+        c.input = 'for i in range(10):  # test\n    print i\n    sleep(0.4)\n'
         ws.append(c)
         return ws
         
