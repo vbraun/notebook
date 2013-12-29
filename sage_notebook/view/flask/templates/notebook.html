@@ -8,6 +8,9 @@ Sage Notebook
 
 {% block content %}
 
+{% for cell in cells %}
+  <div>{{ cell }}</div>
+{% endfor %}
 
 <h1>Input:</h1>                                                               
 <form method='POST' action='#'>                                              

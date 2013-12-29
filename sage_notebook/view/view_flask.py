@@ -39,6 +39,13 @@ class ViewFlask(ViewABC):
         template = os.path.join('flask', 'templates')
         self._app = app = Flask(__name__, static_folder=static, template_folder=template) 
         app.config['DEBUG'] = True
+        self._init_routes()
+
+    def _init_routes(self):
+        """
+        Set up the Flask URL routing
+        """
+        self.notebook_window.add_url_rule_to(self.flask_app)
 
     @property
     def flask_app(self):
@@ -54,9 +61,7 @@ class ViewFlask(ViewABC):
     @cached_property
     def notebook_window(self):
         from .notebook_window_flask import NotebookWindowFlask
-        notebook = NotebookWindowFlask(self.presenter)
-        notebook.add_url_rule_to(self.flask_app)
-        return notebook
+        return NotebookWindowFlask(self.presenter)
 
     @cached_property
     def preferences_window(self):

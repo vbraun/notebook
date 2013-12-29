@@ -24,6 +24,7 @@ This is the Flask implementation of :mod:`notebook_window`
 ##############################################################################
 
 import logging
+import flask
 
 from .window_flask import WindowFlaskSocket
 from .notebook_window import NotebookWindowABC
@@ -33,12 +34,27 @@ class NotebookWindowFlask(NotebookWindowABC, WindowFlaskSocket):
 
     def __init__(self, presenter):
         WindowFlaskSocket.__init__(self, 'notebook', presenter)
+        self.cells = []
 
     def on_receive(self, message):
-        self.on_notebook_evaluate_cell('test_id', message)
+        self.on_notebook_evaluate_cell(self._tmp_cell_id, message)
 
     def set_output(self, cell):
         self.send(cell.as_plain_text())
+
+    def set_worksheet(self, worksheet):
+        """
+        Switch display to the worksheet.
+
+        INPUT:
+
+        - ``worksheet`` -- A
+          :class:`~sage_notebok.model.worksheet.Worksheet`.
+        """
+        for cell in worksheet:
+            self.cells.append('--- {0}\n{1}'.format(cell, cell.input))
+        # TODO: remove _tmp_cell_id
+        self._tmp_cell_id = cell.id
 
     def cell_busy(self, cell):
         """
@@ -58,3 +74,6 @@ class NotebookWindowFlask(NotebookWindowABC, WindowFlaskSocket):
         """
         self.set_output(cell)
         self.send('finished')
+
+    def dispatch_request(self):
+        return flask.render_template(self.name + '.html', cells=self.cells) 

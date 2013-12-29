@@ -118,7 +118,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         self.cells_view = cells
         self.cells_model = []
         cells.set_name(CELLS)
-        cells.show_all()
+        cells.show()
 
     def set_worksheet(self, worksheet):
         """
@@ -141,8 +141,10 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             c.update(cell)
             model.append(c)
             view.pack_start(c, expand, fill, 0)
-            view.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        view.show_all()
+            spacer = CellVerticalSpacerWidget()
+            view.pack_start(spacer, expand, fill, 0)
+            spacer.show()
+        view.show()
 
     def find_cell_widget(self, cell):
         for widget in self.cells_model:

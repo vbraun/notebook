@@ -58,7 +58,7 @@ class CellExpander(Gtk.Misc):
 
     def __init__(self, *args, **kwds):
         super(CellExpander, self).__init__(*args, **kwds)
-        self.set_size_request(40, 40)
+        self.set_size_request(40, -1)
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -94,6 +94,9 @@ class CellExpander(Gtk.Misc):
         y_pos = 0 + y_pad
         brace_height = allocation.height - 2*y_pad
         x_bearing, y_bearing, top_width, top_height = cr.text_extents(glyph_top)[:4]
+        if 2.1 * top_height > allocation.height:
+            # parts would run into each other
+            return
         top_y = y_pos + 0
         cr.move_to(x_pos, top_y - y_bearing)
         cr.show_text(glyph_top)
@@ -152,7 +155,8 @@ class CellWidget(Gtk.Grid):
         i = self._make_input()
         o = self._make_output()
         e = CellExpander()
-        self.attach(e, 0, 0, 1, 2)
+        e.show()
+        self.attach(e,    0, 0, 1, 2)
         self.attach(i[0], 2, 0, 1, 1)
         self.attach(i[1], 1, 0, 1, 1)
         self.attach(o[0], 2, 1, 1, 1)
@@ -192,6 +196,7 @@ class CellWidget(Gtk.Grid):
 
     def set_input(self, input_string):
         self.in_buffer.set_text(input_string)
+        self.in_view.show()
         
     def get_input(self):
         buf = self.in_buffer
@@ -208,11 +213,19 @@ class CellWidget(Gtk.Grid):
         view.set_border_window_size(Gtk.TextWindowType.TOP, INPUT_OUTPUT_VSPACE)
         view.set_hexpand(True)
         view.set_vexpand(False)
+        view.set_cursor_visible(False)
+        view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         return label, view
 
     def set_output(self, cell):
         self.set_index(cell.index)
-        self.out_buffer.set_text(cell.as_plain_text())
+        output = cell.as_plain_text()
+        self.out_buffer.set_text(output)
+        if len(output.strip()) > 0:
+            self.out_view.show()
+        else:
+            self.out_view.hide()
+            self.out_label.hide()
         
     def set_language(self, language='python'):
         mgr = GtkSource.LanguageManager()
@@ -243,6 +256,7 @@ class CellWidget(Gtk.Grid):
         self.set_input(cell.input)
         self.set_output(cell)
         self._id = cell.id
+        self.show()
 
     @property
     def id(self):
