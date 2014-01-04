@@ -144,13 +144,13 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         """
         view = self.cells_view
         model = self.cells_model
-        key_cb = self.on_notebook_cell_key_press_event
         expand = False
         fill = True
-        key_kb = self.on_notebook_cell_key_press_event
+        key_cb = self.on_notebook_cell_key_press_event
+        cursor_cb = self.on_notebook_cell_move_cursor
         view.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
         for cell in worksheet:
-            c = CellWidget(key_kb)
+            c = CellWidget(key_cb, cursor_cb)
             c.update(cell)
             model.append(c)
             view.pack_start(c, expand, fill, 0)
@@ -188,16 +188,55 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         
         
     def on_notebook_cell_key_press_event(self, widget, event):
+        focus = self.cells_view.get_focus_child()
+        if not isinstance(focus, CellWidget):
+            return False
+        if (event.keyval == Gdk.KEY_Up) and \
+           not (event.state & Gdk.ModifierType.MODIFIER_MASK):
+            return self._move_cursor_up(focus)
+        if (event.keyval == Gdk.KEY_Down) and \
+           not (event.state & Gdk.ModifierType.MODIFIER_MASK):
+            return self._move_cursor_down(focus)
         if (event.keyval == Gdk.KEY_Return) and \
            (event.state & Gdk.ModifierType.CONTROL_MASK):
-            focus = self.cells_view.get_focus_child()
-            if not isinstance(focus, CellWidget):
-                return False
             cell_id = focus.id
             input_string = focus.get_input()
             print(cell_id, input_string, widget)
             self.on_notebook_evaluate_cell(cell_id, input_string)
             return True
+        return False
+
+    def _move_cursor_up(self, cell):
+        pos = self.cells_model.index(cell)
+        x, y = cell.get_cursor_position()
+        if not (y == 0 and pos > 0):
+            return False
+        prev_cell = self.cells_model[pos-1]
+        prev_cell.in_view.grab_focus()
+        buf = prev_cell.in_buffer
+        cursor = buf.get_iter_at_line(buf.get_line_count() - 1)
+        cursor.forward_chars(x)
+        buf.place_cursor(cursor)
+        return True
+
+    def _move_cursor_down(self, cell):
+        pos = self.cells_model.index(cell)
+        x, y = cell.get_cursor_position()
+        if not (y == cell.in_buffer.get_line_count()-1 and
+                pos < len(self.cells_model)-1):
+            return False
+        next_cell = self.cells_model[pos+1]
+        next_cell.in_view.grab_focus()
+        buf = next_cell.in_buffer
+        cursor = buf.get_iter_at_line(0)
+        cursor.forward_chars(x)
+        buf.place_cursor(cursor)
+        return True
+
+    def on_notebook_cell_move_cursor(self, widget, step, direction, flag):
+        if direction == -1:
+            return True
+        print(widget, step, direction, flag)
         return False
 
     def on_notebook_window_delete_event(self, widget, data=None):

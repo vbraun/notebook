@@ -145,8 +145,9 @@ class CellExpander(Gtk.Misc):
 class CellWidget(Gtk.Grid):
     __gtype_name__ = 'CellWidget'
 
-    def __init__(self, key_press_event_callback, *args, **kwds):
+    def __init__(self, key_press_event_callback, move_cursor_callback, *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
+        self._move_cursor_callback = move_cursor_callback
         super(CellWidget, self).__init__(*args, **kwds)
         self.set_row_homogeneous(False)
         self.set_column_homogeneous(False)
@@ -183,6 +184,7 @@ class CellWidget(Gtk.Grid):
         label = self.in_label = CellLabelWidget()
         view = self.in_view = GtkSource.View()
         view.connect("key_press_event", self._key_press_event_callback)
+        view.connect("move-cursor", self._move_cursor_callback)
         buffer = self.in_buffer = GtkSource.Buffer()
         style = GtkSource.StyleSchemeManager().get_scheme('tango')
         buffer.set_style_scheme(style)
@@ -264,3 +266,12 @@ class CellWidget(Gtk.Grid):
     def id(self):
         return self._id
     
+    def get_cursor_position(self):
+        """
+        Return the column/row position of the cursor in the input area
+        """
+        buf = self.in_buffer
+        cursor = buf.get_iter_at_mark(buf.get_insert())
+        x = cursor.get_line_offset()
+        y = cursor.get_line()
+        return (x, y)
