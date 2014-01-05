@@ -27,22 +27,29 @@ from gi.repository import GtkSource
 import cairo
 
 
-INPUT_OUTPUT_VSPACE = 10
+INPUT_OUTPUT_VSPACE = 5
 
-
-class CellVerticalSpacerWidget(Gtk.Misc):
+class CellVerticalSpacerWidget(Gtk.EventBox):
     __gtype_name__ = 'CellVerticalSpacerWidget'
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, button_press_callback, *args, **kwds):
         super(CellVerticalSpacerWidget, self).__init__(*args, **kwds)
         self.set_size_request(-1, 10)
+        self.connect('enter-notify-event', self.on_enter_notify_event)
+        self.connect('leave-notify-event', self.on_leave_notify_event)
+        self.connect('button-press-event', button_press_callback)
 
     def do_draw(self, cr):
-        # paint background
-        bg_color = self.get_style_context().get_background_color(
-            self.get_state_flags())
-        cr.set_source_rgba(*list(bg_color))
-        cr.paint()
+        context = self.get_style_context() 
+        allocation = self.get_allocation() 
+        Gtk.render_frame(context, cr, 0, 0, 
+                         allocation.width, allocation.height) 
+        
+    def on_enter_notify_event(self, widget, event):
+        widget.set_state(Gtk.StateFlags.PRELIGHT)
+        
+    def on_leave_notify_event(self, widget, event): 
+        widget.set_state(Gtk.StateFlags.NORMAL) 
 
 
 class CellLabelWidget(Gtk.Label):
@@ -50,9 +57,7 @@ class CellLabelWidget(Gtk.Label):
     
     def __init__(self, *args, **kwds):
         super(CellLabelWidget, self).__init__(*args, **kwds)
-        self.set_property('angle', 270)
-
-
+        #self.set_property('angle', 270)
 
 class CellExpander(Gtk.Misc):
     __gtype_name__ = 'CellExpander'
@@ -62,14 +67,11 @@ class CellExpander(Gtk.Misc):
         self.set_size_request(40, -1)
 
     def do_draw(self, cr):
+        context = self.get_style_context() 
         allocation = self.get_allocation()
+        Gtk.render_background(context, cr, 0, 0, 
+                              allocation.width, allocation.height) 
 
-        # paint background
-        bg_color = self.get_style_context().get_background_color(
-            self.get_state_flags())
-        cr.set_source_rgba(*list(bg_color))
-        cr.paint()
-       
         # # draw a diagonal line
         # allocation = self.get_allocation()
         # fg_color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
@@ -145,9 +147,8 @@ class CellExpander(Gtk.Misc):
 class CellWidget(Gtk.Grid):
     __gtype_name__ = 'CellWidget'
 
-    def __init__(self, key_press_event_callback, move_cursor_callback, *args, **kwds):
+    def __init__(self, key_press_event_callback, *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
-        self._move_cursor_callback = move_cursor_callback
         super(CellWidget, self).__init__(*args, **kwds)
         self.set_row_homogeneous(False)
         self.set_column_homogeneous(False)
@@ -184,7 +185,6 @@ class CellWidget(Gtk.Grid):
         label = self.in_label = CellLabelWidget()
         view = self.in_view = GtkSource.View()
         view.connect("key_press_event", self._key_press_event_callback)
-        view.connect("move-cursor", self._move_cursor_callback)
         buffer = self.in_buffer = GtkSource.Buffer()
         style = GtkSource.StyleSchemeManager().get_scheme('tango')
         buffer.set_style_scheme(style)
@@ -214,7 +214,7 @@ class CellWidget(Gtk.Grid):
         view.set_buffer(buffer)
         fontdesc = Pango.FontDescription("monospace")
         view.modify_font(fontdesc)
-        view.set_border_window_size(Gtk.TextWindowType.TOP, INPUT_OUTPUT_VSPACE)
+        #view.set_border_window_size(Gtk.TextWindowType.TOP, INPUT_OUTPUT_VSPACE)
         view.set_hexpand(True)
         view.set_vexpand(False)
         view.set_cursor_visible(False)

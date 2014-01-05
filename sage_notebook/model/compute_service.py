@@ -79,6 +79,7 @@ class Queue(object):
         if self._current_label is None:
             self._current_label = label
         assert len(self._cells) == len(self._next)
+        print('queue push {0} {1}'.format(self._cells, self._next))
 
     def pop(self):
         old_label, old_cell = self.current_label, self.current_cell
@@ -89,7 +90,7 @@ class Queue(object):
             self._current_label = None
         else:
             self._current_label = self._next[0]
-            self._next = self._next[1:]
+        print('queue pop {0} {1}'.format(self._cells, self._next))
         assert len(self._cells) == len(self._next)
         return (old_label, old_cell)
         
@@ -217,7 +218,7 @@ class ComputeService(object):
         self.queue.pop()
         next_cell = self.queue.current_cell
         if next_cell is not None:
-            self.client.sage_eval(next_cell.input, cell.id)
+            self._client.sage_eval(next_cell.input, next_cell.id)
         self.presenter.on_evaluate_cell_finished(cell_id, cell)
 
     def _impl_sage_eval_crash(self, cell_id):
@@ -233,6 +234,6 @@ class ComputeService(object):
         self.restart_client()
         next_cell = self.queue.current_cell
         if next_cell is not None:
-            self.client.sage_eval(next_cell.input, cell.id)
+            self._client.sage_eval(next_cell.input, next_cell.id)
         
 

@@ -81,6 +81,12 @@ NOTEBOOK_STYLE_CSS = """
     color: grey;
     font-size: 90%;
 }}
+
+#{cells} CellVerticalSpacerWidget:prelight {{
+    background-color: lightblue;
+    transition: all 500ms ease-out;
+}}
+
 """.format(
     window=WINDOW, 
     title=TITLE, 
@@ -126,13 +132,44 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         #view.modify_font(font_description)
         view.set_border_window_size(Gtk.TextWindowType.BOTTOM, 10)
 
-
     def _init_cells(self, cells):
         self.cells_view = cells
         self.cells_model = []
         cells.set_name(CELLS)
+        self._add_spacer()
         cells.show()
 
+    def _add_spacer(self):
+        """
+        Add a spacer to the cells view
+        """
+        expand = False
+        fill = True
+        view = self.cells_view
+        spacer_cb = self.on_notebook_spacer_button_press_event
+        spacer = CellVerticalSpacerWidget(spacer_cb)
+        view.pack_start(spacer, expand, fill, 0)
+        spacer.show()
+
+    def _resize(self, n_cells):
+        view = self.cells_view
+        model = self.cells_model
+        expand = False
+        fill = True
+        key_cb = self.on_notebook_cell_key_press_event
+        missing = n_cells - len(model)
+        for i in range(missing):
+            c = CellWidget(key_cb)
+            model.append(c)
+            view.pack_start(c, expand, fill, 0)
+            self._add_spacer()
+        if missing < 0:
+            delete_cell_from = model[missing]
+            cells = view.get_children()
+            pos = cells.index(delet_cell_from)
+            for cell in cells[pos:]:
+                view.remove(cell)
+        
     def set_worksheet(self, worksheet):
         """
         Switch display to the worksheet.
@@ -142,21 +179,11 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         - ``worksheet`` -- A
           :class:`~sage_notebok.model.worksheet.Worksheet`.
         """
+        self._resize(worksheet.n_cells())
         view = self.cells_view
         model = self.cells_model
-        expand = False
-        fill = True
-        key_cb = self.on_notebook_cell_key_press_event
-        cursor_cb = self.on_notebook_cell_move_cursor
-        view.pack_start(CellVerticalSpacerWidget(), expand, fill, 0)
-        for cell in worksheet:
-            c = CellWidget(key_cb, cursor_cb)
-            c.update(cell)
-            model.append(c)
-            view.pack_start(c, expand, fill, 0)
-            spacer = CellVerticalSpacerWidget()
-            view.pack_start(spacer, expand, fill, 0)
-            spacer.show()
+        for widget, cell in zip(model, worksheet):
+            widget.update(cell)
         view.show()
 
     def find_cell_widget(self, cell):
@@ -186,7 +213,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         widget = self.find_cell_widget(cell)
         widget.set_output(cell)
         
-        
     def on_notebook_cell_key_press_event(self, widget, event):
         focus = self.cells_view.get_focus_child()
         if not isinstance(focus, CellWidget):
@@ -201,10 +227,12 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
            (event.state & Gdk.ModifierType.CONTROL_MASK):
             cell_id = focus.id
             input_string = focus.get_input()
-            print(cell_id, input_string, widget)
             self.on_notebook_evaluate_cell(cell_id, input_string)
             return True
         return False
+
+    def on_notebook_spacer_button_press_event(self, widget, event):
+        print('click ' + str(widget) + ' '+ str(event))
 
     def _move_cursor_up(self, cell):
         pos = self.cells_model.index(cell)
@@ -232,12 +260,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         cursor.forward_chars(x)
         buf.place_cursor(cursor)
         return True
-
-    def on_notebook_cell_move_cursor(self, widget, step, direction, flag):
-        if direction == -1:
-            return True
-        print(widget, step, direction, flag)
-        return False
 
     def on_notebook_window_delete_event(self, widget, data=None):
         self.presenter.hide_notebook_window()

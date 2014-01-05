@@ -27,7 +27,7 @@ import logging
 from .config import Config
 from .compute_service import ComputeService
 
-from .worksheet import Worksheet
+from .worksheet import Cell, Worksheet
 
 
 class Model:
@@ -58,9 +58,19 @@ class Model:
         from .sage_installation import SageInstallation
         return SageInstallation(sage_root)
 
+    # Worksheet data model
+
     def get_cell(self, cell_id):
         return self.worksheet.get_cell(cell_id)
-
+        
+    def insert_cell_at(self, pos, template_cell=None):
+        ws = self.worksheet
+        if template_cell is None:
+            cell = Cell()
+        else:
+            cell = template_cell.copy()
+        ws.insert(pos, cell)
+        
     def load_worksheet(self):
         self.worksheet = ws = Worksheet.create_default()
         return ws

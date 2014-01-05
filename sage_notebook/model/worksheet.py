@@ -13,7 +13,7 @@ class Cell(object):
         else:
             self._id = cell_id
         self._index = None
-        self._input = None
+        self._input = ''
         self.clear_output()
 
     def __repr__(self):
