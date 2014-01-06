@@ -62,10 +62,10 @@ class Model:
 
     def get_cell(self, cell_id):
         return self.worksheet.get_cell(cell_id)
-        
+
     def insert_cell_at(self, pos, template_cell=None):
         """
-        Insert and return a new cell
+        Insert and return the new cell
 
         INPUT:
 
@@ -73,6 +73,11 @@ class Model:
         
         - ``template_cell`` -- a cell or ``None``. If specified, it
           will be copied for the new cell.
+
+        OUTPUT:
+
+        The newly created cell (which is now at position ``pos``) is
+        returned.
         """
         ws = self.worksheet
         if template_cell is None:
@@ -81,6 +86,19 @@ class Model:
             cell = template_cell.copy()
         ws.insert(pos, cell)
         return cell
+        
+    def delete_cell(self, cell_id):
+        """
+        Delete the cell and return the cell that takes its place.
+        """
+        cell = self.get_cell(cell_id)
+        ws = self.worksheet
+        pos = ws.index(cell)
+        ws.delete(cell)
+        if pos == ws.n_cells():
+            # deleted the last cell
+            pos = ws.n_cells() - 1
+        return ws[pos]
         
     def load_worksheet(self):
         self.worksheet = ws = Worksheet.create_default()

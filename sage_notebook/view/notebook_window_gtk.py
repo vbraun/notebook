@@ -166,7 +166,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         if missing < 0:
             delete_cell_from = model[missing]
             cells = view.get_children()
-            pos = cells.index(delet_cell_from)
+            pos = cells.index(delete_cell_from)
             for cell in cells[pos:]:
                 view.remove(cell)
         
@@ -188,7 +188,11 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def cell_grab_focus(self, cell):
         widget = self.find_cell_widget(cell)
+        if widget is self.cells_view.get_focus_child():
+            return
         widget.in_view.grab_focus()
+        buf = widget.in_buffer
+        buf.place_cursor(buf.get_start_iter())
 
     def find_cell_widget(self, cell):
         for widget in self.cells_model:

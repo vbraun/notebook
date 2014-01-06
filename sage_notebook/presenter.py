@@ -105,7 +105,9 @@ class Presenter(object):
         self.view.notebook_window.cell_grab_focus(cell)
 
     def delete_cell(self, cell_id):
-        pass
+        cell = self.model.delete_cell(cell_id)
+        self.view.notebook_window.set_worksheet(self.model.worksheet)
+        self.view.notebook_window.cell_grab_focus(cell)
 
     def show_notebook_window_worksheet(self):
         """

@@ -6,6 +6,7 @@ Model for the Worksheet
 
 
 class Cell(object):
+
     def __init__(self, cell_id=None):
         if cell_id is None:
             import uuid
@@ -105,6 +106,15 @@ class Worksheet(object):
     def append(self, cell):
         self.insert(self.n_cells(), cell)
 
+    def index(self, cell):
+        return self._order.index(cell.id)
+
+    def delete(self, cell):
+        del self._cells_dict[cell.id]
+        self._order.remove(cell.id)
+        if self.n_cells() == 0:
+            self.append(Cell())
+
     def n_cells(self):
         return len(self._cells_dict)
 
@@ -112,11 +122,11 @@ class Worksheet(object):
 
     def get_cell(self, cell_id):
         return self._cells_dict[cell_id]
-        
-    def get_indent(self, cell_id):
-        return 0
-    
-        
+
+    def __getitem__(self, i):
+        cell_id = self._order[i]
+        return self._cells_dict[cell_id]
+
     def __iter__(self):
         for cell_id in self._order:
             yield self._cells_dict[cell_id]
