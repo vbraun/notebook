@@ -61,3 +61,9 @@ class NotebookWindowABC(WindowABC):
           :class:`~sage_notebok.model.worksheet.Worksheet`.
         """
         raise NotImplementedError
+
+    def cell_grab_focus(self, cell):
+        """
+        Focus cell and put cursor into the cell's input field
+        """
+        raise NotImplementedError

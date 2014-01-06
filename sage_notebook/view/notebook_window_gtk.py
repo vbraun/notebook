@@ -186,6 +186,10 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             widget.update(cell)
         view.show()
 
+    def cell_grab_focus(self, cell):
+        widget = self.find_cell_widget(cell)
+        widget.in_view.grab_focus()
+
     def find_cell_widget(self, cell):
         for widget in self.cells_model:
             if widget.id == cell.id:
@@ -224,7 +228,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
            not (event.state & Gdk.ModifierType.MODIFIER_MASK):
             return self._move_cursor_down(focus)
         if (event.keyval == Gdk.KEY_Return) and \
-           (event.state & Gdk.ModifierType.CONTROL_MASK):
+           (event.state & Gdk.ModifierType.SHIFT_MASK):
             cell_id = focus.id
             input_string = focus.get_input()
             self.on_notebook_evaluate_cell(cell_id, input_string)
@@ -233,6 +237,15 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def on_notebook_spacer_button_press_event(self, widget, event):
         print('click ' + str(widget) + ' '+ str(event))
+        pos = 0
+        for child in self.cells_view.get_children():
+            if isinstance(child, CellWidget):
+                pos += 1
+            if child is widget:
+                self.presenter.insert_cell_at(pos)
+                return
+        raise ValueError('clicked on spacer that is not a child of the cells_view') 
+
 
     def _move_cursor_up(self, cell):
         pos = self.cells_model.index(cell)

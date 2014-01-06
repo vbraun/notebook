@@ -64,12 +64,23 @@ class Model:
         return self.worksheet.get_cell(cell_id)
         
     def insert_cell_at(self, pos, template_cell=None):
+        """
+        Insert and return a new cell
+
+        INPUT:
+
+        - ``pos`` -- integer. The position in the worksheet.
+        
+        - ``template_cell`` -- a cell or ``None``. If specified, it
+          will be copied for the new cell.
+        """
         ws = self.worksheet
         if template_cell is None:
             cell = Cell()
         else:
             cell = template_cell.copy()
         ws.insert(pos, cell)
+        return cell
         
     def load_worksheet(self):
         self.worksheet = ws = Worksheet.create_default()

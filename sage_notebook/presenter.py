@@ -100,8 +100,9 @@ class Presenter(object):
         self.view.notebook_window.cell_finished(cell)
 
     def insert_cell_at(self, pos, template_cell=None):
-        self.model.insert_cell_at(pos, template_cell)
+        cell = self.model.insert_cell_at(pos, template_cell)
         self.view.notebook_window.set_worksheet(self.model.worksheet)
+        self.view.notebook_window.cell_grab_focus(cell)
 
     def delete_cell(self, cell_id):
         pass
