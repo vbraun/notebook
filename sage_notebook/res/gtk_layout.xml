@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.0 on Mon Jan  6 15:29:44 2014 -->
 <interface>
   <!-- interface-requires gtk+ 3.6 -->
   <object class="GtkAboutDialog" id="about_window">
@@ -759,8 +760,8 @@ Author: Volker Braun</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Sage Notebook</property>
     <property name="icon">icons/sage.svg</property>
-    <signal name="destroy" handler="on_notebook_window_destroy" swapped="no"/>
     <signal name="delete-event" handler="on_notebook_window_delete_event" swapped="no"/>
+    <signal name="destroy" handler="on_notebook_window_destroy" swapped="no"/>
     <child>
       <object class="GtkBox" id="notebook_box">
         <property name="visible">True</property>
@@ -841,7 +842,7 @@ Author: Volker Braun</property>
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem2">
+              <object class="GtkMenuItem" id="notebook_menubar_edit">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Edit</property>
@@ -850,6 +851,36 @@ Author: Volker Braun</property>
                   <object class="GtkMenu" id="menu2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="notebook_menu_insert_before">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Insert before</property>
+                        <signal name="activate" handler="on_notebook_menu_insert_before_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="notebook_menu_insert_after">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Insert after</property>
+                        <signal name="activate" handler="on_notebook_menu_insert_after_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="notebook_menu_cell_delete">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Delete cell</property>
+                        <signal name="activate" handler="on_notebook_menu_cell_delete_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="notebook_menu_cut">
                         <property name="label">gtk-cut</property>
@@ -895,7 +926,7 @@ Author: Volker Braun</property>
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
+              <object class="GtkMenuItem" id="notebook_menubar_view">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
@@ -938,7 +969,7 @@ Author: Volker Braun</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkToolButton" id="main_toolbutton_new">
+              <object class="GtkToolButton" id="notebook_toolbutton_new1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">New</property>
@@ -951,12 +982,79 @@ Author: Volker Braun</property>
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="main_toolbutton_save">
+              <object class="GtkToolButton" id="notebook_toolbutton_save1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Save</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-save</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="separatortoolitem1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="notebook_toolbutton_run">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="is_important">True</property>
+                <property name="label" translatable="yes">Run</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-media-play</property>
+                <signal name="clicked" handler="on_notebook_toolbutton_run_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="notebook_toolbutton_stop">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Stop</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-stop</property>
+                <signal name="clicked" handler="on_notebook_toolbutton_stop_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="notebook_toolbutton_spacer">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="draw">False</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItem" id="notebook_toolbutton_spinner_bin">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkSpinner" id="notebook_toolbutton_spinner">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1480,9 +1578,9 @@ Author: Volker Braun</property>
     <property name="modal">True</property>
     <property name="icon">icons/sage.svg</property>
     <property name="type_hint">dialog</property>
-    <signal name="close" handler="on_setup_assistant_close" swapped="no"/>
     <signal name="apply" handler="on_setup_assistant_apply" swapped="no"/>
     <signal name="cancel" handler="on_setup_assistant_cancel" swapped="no"/>
+    <signal name="close" handler="on_setup_assistant_close" swapped="no"/>
     <signal name="prepare" handler="on_setup_assistant_prepare" swapped="no"/>
     <child>
       <placeholder/>
@@ -1608,7 +1706,6 @@ Author: Volker Braun</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">●</property>
-                <property name="invisible_char_set">True</property>
                 <property name="primary_icon_activatable">False</property>
                 <property name="secondary_icon_activatable">False</property>
               </object>

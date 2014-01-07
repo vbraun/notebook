@@ -41,6 +41,15 @@ DESCRIPTION_VIEW = 'notebook_description_view'
 DESCRIPTION_MODEL = 'notebook_description_model'
 CELLS = 'notebook_cells_box'
 
+MENU_INSERT_BEFORE = 'notebook_menu_insert_before'
+MENU_INSERT_AFTER = 'notebook_menu_insert_after'
+MENU_CELL_DELETE = 'notebook_menu_cell_delete'
+
+TOOLBUTTON_RUN = 'notebook_toolbutton_run'
+TOOLBUTTON_STOP = 'notebook_toolbutton_stop'
+TOOLBUTTON_SPINNER = 'notebook_toolbutton_spinner'
+
+
 NOTEBOOK_STYLE_CSS = """
 #{title} {{
     border-radius: 0;
@@ -83,10 +92,14 @@ NOTEBOOK_STYLE_CSS = """
 }}
 
 #{cells} CellVerticalSpacerWidget:prelight {{
-    background-color: lightblue;
+    background-color: #BCECAC;
     transition: all 500ms ease-out;
 }}
 
+#{cells} *:insensitive {{
+    background-color: #BCECAC;
+    transition: all 500ms ease-out;
+}}
 """.format(
     window=WINDOW, 
     title=TITLE, 
@@ -102,13 +115,21 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
 
     def __init__(self, presenter, make_builder):
-        builder = make_builder(WINDOW, TITLE, DESCRIPTION_VIEW, DESCRIPTION_MODEL, CELLS)
+        builder = make_builder(
+            WINDOW, TITLE, DESCRIPTION_VIEW, DESCRIPTION_MODEL, CELLS,
+            MENU_INSERT_BEFORE, MENU_INSERT_AFTER, MENU_CELL_DELETE,
+            TOOLBUTTON_RUN, TOOLBUTTON_STOP, TOOLBUTTON_SPINNER)
         WindowGtk.__init__(self, WINDOW, presenter, builder=builder)
+        self.menu_insert_before = builder.get_object(MENU_INSERT_BEFORE)
+        self.menu_insert_after = builder.get_object(MENU_INSERT_AFTER)
+        self.menu_cell_delete = builder.get_object(MENU_CELL_DELETE)
+        self.toolbutton_run = builder.get_object(TOOLBUTTON_RUN)
+        self.toolbutton_stop = builder.get_object(TOOLBUTTON_STOP)
+        self.toolbutton_spinner = builder.get_object(TOOLBUTTON_SPINNER)
         self._init_title(builder.get_object(TITLE))
         self._init_description(builder.get_object(DESCRIPTION_VIEW),
                                builder.get_object(DESCRIPTION_MODEL))
         self._init_cells(builder.get_object(CELLS))
-
         style_provider = Gtk.CssProvider()
         style_provider.load_from_data(NOTEBOOK_STYLE_CSS)
         Gtk.StyleContext.add_provider_for_screen(
@@ -157,9 +178,11 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         expand = False
         fill = True
         key_cb = self.on_notebook_cell_key_press_event
+        focus_in_cb = self.on_notebook_cell_focus_in_event
+        focus_out_cb = self.on_notebook_cell_focus_out_event
         missing = n_cells - len(model)
         for i in range(missing):
-            c = CellWidget(key_cb)
+            c = CellWidget(key_cb, focus_in_cb, focus_out_cb)
             model.append(c)
             view.pack_start(c, expand, fill, 0)
             self._add_spacer()
@@ -187,6 +210,9 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         view.show()
 
     def cell_grab_focus(self, cell):
+        """
+        Focus and place cursor into cell input area
+        """
         widget = self.find_cell_widget(cell)
         if widget is self.cells_view.get_focus_child():
             return
@@ -204,6 +230,8 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         """
         Update the view of the cell to display a running computation.
         """
+        self.toolbutton_stop.set_sensitive(True)
+        self.toolbutton_spinner.start()
         widget = self.find_cell_widget(cell)
         widget.set_output(cell)
 
@@ -220,6 +248,9 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         """
         widget = self.find_cell_widget(cell)
         widget.set_output(cell)
+        widget.set_sensitive(True)
+        self.toolbutton_stop.set_sensitive(False)
+        self.toolbutton_spinner.stop()
         
     def on_notebook_cell_key_press_event(self, widget, event):
         focus = self.cells_view.get_focus_child()
@@ -233,14 +264,42 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             return self._move_cursor_down(focus)
         if (event.keyval == Gdk.KEY_Return) and \
            (event.state & Gdk.ModifierType.SHIFT_MASK):
-            cell_id = focus.id
-            input_string = focus.get_input()
-            self.on_notebook_evaluate_cell(cell_id, input_string)
-            return True
+            return self._start_evaluate_cell(focus)
         return False
 
+    def _start_evaluate_cell(self, cell):
+        cell_id = cell.id
+        input_string = cell.get_input()
+        widget = self.find_cell_widget(cell)
+        widget.set_sensitive(False)
+        self.on_notebook_evaluate_cell(cell_id, input_string)
+        # Move cursor to the next cell, insert one if necessary
+        cells = self.cells_model
+        pos = cells.index(widget) + 1
+        print(pos)
+        if pos == len(cells):
+            self.presenter.insert_cell_at(pos)
+        else:
+            next_widget = cells[pos]
+            next_widget.in_view.grab_focus()
+            buf = next_widget.in_buffer
+            cursor = buf.get_start_iter()
+            buf.place_cursor(cursor)
+        return True
+
+    def on_notebook_cell_focus_in_event(self, widget, event):
+        self.toolbutton_run.set_sensitive(True)
+        self.menu_insert_before.set_sensitive(True)
+        self.menu_insert_after.set_sensitive(True)
+        self.menu_cell_delete.set_sensitive(True)
+
+    def on_notebook_cell_focus_out_event(self, widget, event):
+        self.toolbutton_run.set_sensitive(False)
+        self.menu_insert_before.set_sensitive(False)
+        self.menu_insert_after.set_sensitive(False)
+        self.menu_cell_delete.set_sensitive(False)
+
     def on_notebook_spacer_button_press_event(self, widget, event):
-        print('click ' + str(widget) + ' '+ str(event))
         pos = 0
         for child in self.cells_view.get_children():
             if isinstance(child, CellWidget):
@@ -249,7 +308,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
                 self.presenter.insert_cell_at(pos)
                 return
         raise ValueError('clicked on spacer that is not a child of the cells_view') 
-
 
     def _move_cursor_up(self, cell):
         pos = self.cells_model.index(cell)
@@ -285,7 +343,14 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
     def on_notebook_window_destroy(self, widget, data=None):
         logging.info('TODO: destroyed. autosave?')
         
+    def on_notebook_toolbutton_run_clicked(self, widget, data=None):
+        focus = self.cells_view.get_focus_child()
+        if not isinstance(focus, CellWidget):
+            return False
+        return self._start_evaluate_cell(focus)
 
+    def on_notebook_toolbutton_stop_clicked(self, widget, data=None):
+        self.presenter.show_notification(self, "todo: stop")
 
     def on_notebook_menu_new_activate(self, widget, data=None):
         self.presenter.show_notification(self, "todo: new")
@@ -301,6 +366,27 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def on_notebook_menu_quit_activate(self, widget, data=None):
         self.presenter.hide_notebook_window()
+
+
+    def on_notebook_menu_insert_before_activate(self, widget, data=None):
+        focus = self.cells_view.get_focus_child()
+        if not isinstance(focus, CellWidget):
+            return False
+        pos = self.cells_model.index(focus)
+        self.presenter.insert_cell_at(pos)
+
+    def on_notebook_menu_insert_after_activate(self, widget, data=None):
+        focus = self.cells_view.get_focus_child()
+        if not isinstance(focus, CellWidget):
+            return False
+        focus = self.cells_view.get_focus_child()
+        if not isinstance(focus, CellWidget):
+            return False
+        pos = self.cells_model.index(focus)
+        self.presenter.insert_cell_at(pos+1)
+
+    def on_notebook_menu_cell_delete_activate(self, widget, data=None):
+        self.presenter.show_error(self, 'delete', "todo: delete")
 
 
     def on_notebook_menu_cut_activate(self, widget, data=None):

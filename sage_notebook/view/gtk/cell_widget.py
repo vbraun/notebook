@@ -147,8 +147,12 @@ class CellExpander(Gtk.Misc):
 class CellWidget(Gtk.Grid):
     __gtype_name__ = 'CellWidget'
 
-    def __init__(self, key_press_event_callback, *args, **kwds):
+    def __init__(self, key_press_event_callback, 
+                 focus_in_event_callback, focus_out_event_callback,
+                 *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
+        self._focus_in_event_callback = focus_in_event_callback
+        self._focus_out_event_callback = focus_out_event_callback
         super(CellWidget, self).__init__(*args, **kwds)
         self.set_row_homogeneous(False)
         self.set_column_homogeneous(False)
@@ -184,7 +188,9 @@ class CellWidget(Gtk.Grid):
     def _make_input(self):
         label = self.in_label = CellLabelWidget()
         view = self.in_view = GtkSource.View()
-        view.connect("key_press_event", self._key_press_event_callback)
+        view.connect("key-press-event", self._key_press_event_callback)
+        view.connect("focus-in-event", self._focus_in_event_callback)
+        view.connect("focus-out-event", self._focus_out_event_callback)
         buffer = self.in_buffer = GtkSource.Buffer()
         style = GtkSource.StyleSchemeManager().get_scheme('tango')
         buffer.set_style_scheme(style)
