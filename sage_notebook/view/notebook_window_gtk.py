@@ -133,6 +133,9 @@ class CellsModel(object):
     def index(self, widget):
         return self._data.index(widget)
 
+    def remove(self, widget):
+        self._data.remove(widget)
+
     def find(self, cell):
         """
         Find the widget displaying the given cell
@@ -220,6 +223,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         )
         builder.connect_signals(self)
 
+
     def _init_title(self, title):
         self.title = title
         title.set_name(TITLE)
@@ -271,10 +275,12 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             delete_cell_from = model[missing]
             cells = view.get_children()
             pos = cells.index(delete_cell_from)
-            for cell in cells[pos:]:
+            for cell in cells[pos:pos-2*missing]:
                 view.remove(cell)
-        print('resize', len(view), len(model), sum(1 for child in view.get_children() if isinstance(child, CellWidget)) )
-        assert sum(1 for child in view.get_children() if isinstance(child, CellWidget)) == len(model)
+                if isinstance(cell, CellWidget):
+                    model.remove(cell)
+        assert n_cells == len(model)
+        assert n_cells == sum(1 for child in view.get_children() if isinstance(child, CellWidget))
         
     def set_worksheet(self, worksheet):
         """
@@ -348,7 +354,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             return self._start_evaluate_cell(focus)
         if (event.keyval == Gdk.KEY_Delete) and \
            (event.state & Gdk.ModifierType.CONTROL_MASK):
-            return self._delete_cell(focus)
+            return self.presenter.delete_cell(focus.id)
         return False
 
     def _start_evaluate_cell(self, cell):
@@ -367,11 +373,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             cursor = buf.get_start_iter()
             buf.place_cursor(cursor)
         return True
-
-    def _delete(self, cell):
-        cell_id = cell.id
-        widget = self.cell_model.find(cell)
-        self.presenter.delete_cell_at(pos)
 
     def on_notebook_cell_focus_in_event(self, widget, event):
         self.toolbutton_run.set_sensitive(True)
