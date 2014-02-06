@@ -15,6 +15,7 @@ class Cell(object):
             self._id = cell_id
         self._index = None
         self._input = ''
+        self._busy = False
         self.clear_output()
 
     def __repr__(self):
@@ -45,10 +46,25 @@ class Cell(object):
         self._stderr = ''
         
     def accumulate_stdout(self, stdout):
+        assert self._busy
         self._stdout += stdout
 
     def accumulate_stderr(self, stderr):
+        assert self._busy
         self._stderr += stderr
+
+    @property
+    def busy(self):
+        """
+        Whether a computation is in progress
+        """
+        return self._busy
+        
+    @busy.setter
+    def busy(self, value):
+        self._busy = value
+        if value is True:
+            self.clear_output()
 
     @property
     def input(self):

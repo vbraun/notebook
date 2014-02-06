@@ -174,7 +174,7 @@ class ComputeService(object):
         Start evaluating a notebook cell.
         """
         ready = self.queue.is_empty()
-        cell.clear_output()
+        cell.busy = True
         self.queue.push(cell.id, cell)
         if ready:
             self._client.sage_eval(cell.input, cell.id)
@@ -212,6 +212,7 @@ class ComputeService(object):
         RPC callback when evaluation finished successfully
         """
         cell = self.queue.current_cell
+        cell.busy = False
         cell.index = self._eval_counter
         self._eval_counter += 1
         assert cell.id == cell_id
@@ -226,6 +227,7 @@ class ComputeService(object):
         RPC callback when the compute server crashed
         """
         cell = self.queue.current_cell
+        cell.busy = False
         cell.index = None
         assert cell.id == cell_id
         self.queue.pop()

@@ -222,6 +222,7 @@ class CellWidget(Gtk.Grid):
         view.set_hexpand(True)
         view.set_vexpand(False)
         view.set_cursor_visible(False)
+        view.set_editable(False)
         view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         return label, view
 
@@ -263,6 +264,7 @@ class CellWidget(Gtk.Grid):
         self.set_index(cell.index)
         self.set_input(cell.input)
         self.set_output(cell)
+        self.set_sensitive(not cell.busy)
         self._id = cell.id
         self.show()
 

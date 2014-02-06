@@ -109,6 +109,87 @@ NOTEBOOK_STYLE_CSS = """
 
 
 
+class CellsModel(object):
+
+    def __init__(self):
+        """
+        Container for the cell widgets
+        """
+        self._data = []
+
+    def __iter__(self):
+        for widget in self._data:
+            yield widget
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, pos):
+        return self._data[pos]
+
+    def append(self, widget):
+        self._data.append(widget)
+
+    def index(self, widget):
+        return self._data.index(widget)
+
+    def find(self, cell):
+        """
+        Find the widget displaying the given cell
+
+        INPUT:
+
+        - ``cell`` -- a cell of the notebook data model
+        """
+        for widget in self._data:
+            if widget.id == cell.id:
+                return widget
+        raise IndexError('no widget for cell')
+        
+    def find_prev_sensitive(self, cell):
+        """
+        Find the previous cells' widget, skipping over insensitive widgets
+
+        INPUT:
+
+        - ``cell`` -- a cell of the notebook data model
+
+        OUTPUT:
+
+        The widget preceeding the cell's widget (ignoring insensitive
+        widgets), or ``None`` if there is no such widget.
+        """            
+        pos = self.index(cell)
+        while True:
+            pos = pos - 1
+            if pos < 0:
+                return None
+            prev_cell = self[pos]
+            if prev_cell.is_sensitive():
+                return prev_cell
+
+    def find_next_sensitive(self, cell):
+        """
+        Find the next cells' widget, skipping over insensitive widgets
+
+        INPUT:
+
+        - ``cell`` -- a cell of the notebook data model
+
+        OUTPUT:
+
+        The widget following the cell's widget (ignoring insensitive
+        widgets), or ``None`` if there is no such widget.
+        """            
+        pos = self.index(cell)
+        while True:
+            pos = pos + 1
+            if pos == len(self):
+                return None
+            next_cell = self[pos]
+            if next_cell.is_sensitive():
+                return next_cell
+
 
 
 class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
@@ -155,7 +236,7 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def _init_cells(self, cells):
         self.cells_view = cells
-        self.cells_model = []
+        self.cells_model = CellsModel()
         cells.set_name(CELLS)
         self._add_spacer()
         cells.show()
@@ -192,6 +273,8 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
             pos = cells.index(delete_cell_from)
             for cell in cells[pos:]:
                 view.remove(cell)
+        print('resize', len(view), len(model), sum(1 for child in view.get_children() if isinstance(child, CellWidget)) )
+        assert sum(1 for child in view.get_children() if isinstance(child, CellWidget)) == len(model)
         
     def set_worksheet(self, worksheet):
         """
@@ -213,18 +296,12 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         """
         Focus and place cursor into cell input area
         """
-        widget = self.find_cell_widget(cell)
+        widget = self.cells_model.find(cell)
         if widget is self.cells_view.get_focus_child():
             return
         widget.in_view.grab_focus()
         buf = widget.in_buffer
         buf.place_cursor(buf.get_start_iter())
-
-    def find_cell_widget(self, cell):
-        for widget in self.cells_model:
-            if widget.id == cell.id:
-                return widget
-        raise IndexError('no widget for cell')
 
     def cell_busy(self, cell):
         """
@@ -232,27 +309,31 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         """
         self.toolbutton_stop.set_sensitive(True)
         self.toolbutton_spinner.start()
-        widget = self.find_cell_widget(cell)
+        widget = self.cells_model.find(cell)
         widget.set_output(cell)
+        widget.set_sensitive(False)
 
     def cell_update(self, cell):
         """
-        Update the view of the cell to display a partial result.
+        Update the view of the cell to display a (potentially partial) result.
         """
-        widget = self.find_cell_widget(cell)
+        widget = self.cells_model.find(cell)
         widget.set_output(cell)
         
     def cell_finished(self, cell):
         """
         Update the view of the cell to display the final result
         """
-        widget = self.find_cell_widget(cell)
+        widget = self.cells_model.find(cell)
         widget.set_output(cell)
         widget.set_sensitive(True)
         self.toolbutton_stop.set_sensitive(False)
         self.toolbutton_spinner.stop()
         
     def on_notebook_cell_key_press_event(self, widget, event):
+        """
+        Callback for keyboard entry in all cell widgets
+        """
         focus = self.cells_view.get_focus_child()
         if not isinstance(focus, CellWidget):
             return False
@@ -265,27 +346,32 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         if (event.keyval == Gdk.KEY_Return) and \
            (event.state & Gdk.ModifierType.SHIFT_MASK):
             return self._start_evaluate_cell(focus)
+        if (event.keyval == Gdk.KEY_Delete) and \
+           (event.state & Gdk.ModifierType.CONTROL_MASK):
+            return self._delete_cell(focus)
         return False
 
     def _start_evaluate_cell(self, cell):
         cell_id = cell.id
         input_string = cell.get_input()
-        widget = self.find_cell_widget(cell)
-        widget.set_sensitive(False)
         self.on_notebook_evaluate_cell(cell_id, input_string)
         # Move cursor to the next cell, insert one if necessary
         cells = self.cells_model
-        pos = cells.index(widget) + 1
-        print(pos)
-        if pos == len(cells):
+        next_widget = cells.find_next_sensitive(cell)
+        if next_widget is None:
+            pos = len(cells)
             self.presenter.insert_cell_at(pos)
         else:
-            next_widget = cells[pos]
             next_widget.in_view.grab_focus()
             buf = next_widget.in_buffer
             cursor = buf.get_start_iter()
             buf.place_cursor(cursor)
         return True
+
+    def _delete(self, cell):
+        cell_id = cell.id
+        widget = self.cell_model.find(cell)
+        self.presenter.delete_cell_at(pos)
 
     def on_notebook_cell_focus_in_event(self, widget, event):
         self.toolbutton_run.set_sensitive(True)
@@ -310,11 +396,12 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         raise ValueError('clicked on spacer that is not a child of the cells_view') 
 
     def _move_cursor_up(self, cell):
-        pos = self.cells_model.index(cell)
         x, y = cell.get_cursor_position()
-        if not (y == 0 and pos > 0):
+        if not (y == 0):
             return False
-        prev_cell = self.cells_model[pos-1]
+        prev_cell = self.cells_model.find_prev_sensitive(cell)
+        if prev_cell is None:
+            return False
         prev_cell.in_view.grab_focus()
         buf = prev_cell.in_buffer
         cursor = buf.get_iter_at_line(buf.get_line_count() - 1)
@@ -323,12 +410,12 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         return True
 
     def _move_cursor_down(self, cell):
-        pos = self.cells_model.index(cell)
         x, y = cell.get_cursor_position()
-        if not (y == cell.in_buffer.get_line_count()-1 and
-                pos < len(self.cells_model)-1):
+        if not y == cell.in_buffer.get_line_count() - 1:
             return False
-        next_cell = self.cells_model[pos+1]
+        next_cell = self.cells_model.find_next_sensitive(cell)
+        if next_cell is None:
+            return False
         next_cell.in_view.grab_focus()
         buf = next_cell.in_buffer
         cursor = buf.get_iter_at_line(0)

@@ -41,7 +41,7 @@ class NotebookWindowABC(WindowABC):
 
     def cell_update(self, cell):
         """
-        Update the view of the cell to display a partial result.
+        Update the view of the cell to display a (potentially partial) result.
         """
         raise NotImplementedError
         
