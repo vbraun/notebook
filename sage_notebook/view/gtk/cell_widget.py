@@ -26,6 +26,9 @@ from gi.repository import GLib, Gdk, Gtk, Pango
 from gi.repository import GtkSource
 import cairo
 
+from .code_completion import SageCompletionProvider
+from .fonts import MATH_SYMBOL_FONT
+
 
 INPUT_OUTPUT_VSPACE = 5
 
@@ -86,38 +89,47 @@ class CellExpander(Gtk.Misc):
         glyph_bot = u'\u23a9'
         glyph_stretch = u'\u23aa'
 
-        #cr.select_font_face('monospace',
-        #                    cairo.FONT_SLANT_NORMAL,
-        #                    cairo.FONT_WEIGHT_BOLD)
+        if MATH_SYMBOL_FONT:
+            rc = cr.select_font_face(MATH_SYMBOL_FONT,
+                                     cairo.FONT_SLANT_NORMAL,
+                                     cairo.FONT_WEIGHT_BOLD)
 
         fg_color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
         cr.set_source_rgba(*list(fg_color));
         cr.set_font_size(18)
+
+        x_bearing, top_y_bearing, top_width, top_height = cr.text_extents(glyph_top)[:4]
+        x_bearing, mid_y_bearing, mid_width, mid_height = cr.text_extents(glyph_mid)[:4]
+        x_bearing, bot_y_bearing, bot_width, bot_height = cr.text_extents(glyph_bot)[:4]
+        x_bearing, stretch_y_bearing, stretch_width, stretch_height = \
+            cr.text_extents(glyph_stretch)[:4]
+
+        if top_height == 0 or mid_height == 0 or bot_height == 0 or stretch_height == 0:
+            import warnings
+            warnings.warn('Font not suitable for stretchy brackets')
+            return
+
         x_pos = 20
         y_pad = 0
         y_pos = 0 + y_pad
         brace_height = allocation.height - 2*y_pad
-        x_bearing, y_bearing, top_width, top_height = cr.text_extents(glyph_top)[:4]
+
         if 2.1 * top_height > allocation.height:
             # parts would run into each other
             return
         top_y = y_pos + 0
-        cr.move_to(x_pos, top_y - y_bearing)
+        cr.move_to(x_pos, top_y - top_y_bearing)
         cr.show_text(glyph_top)
 
-        x_bearing, y_bearing, mid_width, mid_height = cr.text_extents(glyph_mid)[:4]
         mid_y = y_pos + (brace_height-mid_height)/2.0
-        cr.move_to(x_pos, mid_y - y_bearing)
+        cr.move_to(x_pos, mid_y - mid_y_bearing)
         cr.show_text(glyph_mid)
 
-        x_bearing, y_bearing, bot_width, bot_height = cr.text_extents(glyph_bot)[:4]
         bot_y = y_pos + (brace_height - bot_height)
-        cr.move_to(x_pos, bot_y - y_bearing)
+        cr.move_to(x_pos, bot_y - bot_y_bearing)
         cr.show_text(glyph_bot)
 
         overlap = 2
-        x_bearing, y_bearing, stretch_width, stretch_height = \
-            cr.text_extents(glyph_stretch)[:4]
         # vertical space to fill with the stretched character
         desired = (brace_height - top_height - mid_height - bot_height)/2 + 2*overlap
         desired *= 1.02   # why? get gaps in long cells
@@ -127,20 +139,14 @@ class CellExpander(Gtk.Misc):
         cr.set_font_matrix(m)
         
         cr.move_to(x_pos, 
-                   top_y + top_height - scale*y_bearing - overlap)
+                   top_y + top_height - scale*stretch_y_bearing - overlap)
         cr.show_text(glyph_stretch)
 
         cr.move_to(x_pos,
-                   mid_y + mid_height - scale*y_bearing - overlap)
+                   mid_y + mid_height - scale*stretch_y_bearing - overlap)
         cr.show_text(glyph_stretch)
 
 
-        
-        #cr.move_to(1 - width / 2 - x_bearing, 0.5 - height / 2 - y_bearing)
-
-        #cr.move_to(allocation.width/2 - x_bearing - width/2, 
-        # j          allocation.height/2 - y_bearing - height/2)
-        #cr.show_text(bracket)
         
 
 
@@ -188,7 +194,7 @@ class CellWidget(Gtk.Grid):
     def _make_input(self):
         label = self.in_label = CellLabelWidget()
         view = self.in_view = GtkSource.View()
-        view.connect("key-press-event", self._key_press_event_callback)
+        view.connect("key-press-event", self.on_key_press_event)
         view.connect("focus-in-event", self._focus_in_event_callback)
         view.connect("focus-out-event", self._focus_out_event_callback)
         buffer = self.in_buffer = GtkSource.Buffer()
@@ -200,10 +206,30 @@ class CellWidget(Gtk.Grid):
         self.set_language()
         view.set_hexpand(True)
         view.set_vexpand(False)
+        completion = self.completion = view.get_completion()
+        completion.add_provider(SageCompletionProvider())
+        #completion.set_property('auto-complete-delay', 2000)
+        self._completion_is_visible = False
+        completion.connect('show', self.on_completion_show_event)
+        completion.connect('hide', self.on_completion_hide_event)
         return label, view
 
+    def on_completion_show_event(self, completion):
+        self._completion_is_visible = True
+
+    def on_completion_hide_event(self, completion):
+        self._completion_is_visible = False
+
+    def on_key_press_event(self, widget, event):
+        if self._completion_is_visible and \
+           event.keyval in [Gdk.KEY_Up, Gdk.KEY_Down]:
+            return False  # do not handle
+        return self._key_press_event_callback(widget, event)
+
     def set_input(self, input_string):
+        self.completion.block_interactive()
         self.in_buffer.set_text(input_string)
+        self.completion.unblock_interactive()
         self.in_view.show()
         
     def get_input(self):

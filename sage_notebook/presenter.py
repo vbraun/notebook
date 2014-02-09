@@ -109,6 +109,12 @@ class Presenter(object):
         self.view.notebook_window.set_worksheet(self.model.worksheet)
         self.view.notebook_window.cell_grab_focus(cell)
 
+    def auto_complete(self, text, cursor, callback):
+        """
+        Call back with suggestions for auto-completion.
+        """
+        pass
+
     def show_notebook_window_worksheet(self):
         """
         Load & display a new worksheet.

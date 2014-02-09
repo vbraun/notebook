@@ -47,11 +47,12 @@ def check_gtk_prerequisites():
     except ImportError:
         logger.critical('Missing dependency: Python Cairo interface.')
         sys.exit(1)
-    try: 
-        from gi.repository import Vte
-    except ImportError:
-        logger.critical('Missing dependency: VTE terminal widget.')
-        sys.exit(1)
+    ### We don't use Vte for now
+    #try: 
+    #    from gi.repository import Vte
+    #except ImportError:
+    #    logger.critical('Missing dependency: VTE terminal widget.')
+    #    sys.exit(1)
 
 
 

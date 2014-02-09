@@ -375,12 +375,18 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         return True
 
     def on_notebook_cell_focus_in_event(self, widget, event):
+        """
+        Callback: Notebook cell got focused
+        """
         self.toolbutton_run.set_sensitive(True)
         self.menu_insert_before.set_sensitive(True)
         self.menu_insert_after.set_sensitive(True)
         self.menu_cell_delete.set_sensitive(True)
 
     def on_notebook_cell_focus_out_event(self, widget, event):
+        """
+        Callback: Notebook cell lost focus
+        """
         self.toolbutton_run.set_sensitive(False)
         self.menu_insert_before.set_sensitive(False)
         self.menu_insert_after.set_sensitive(False)
@@ -454,7 +460,6 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
 
     def on_notebook_menu_quit_activate(self, widget, data=None):
         self.presenter.hide_notebook_window()
-
 
     def on_notebook_menu_insert_before_activate(self, widget, data=None):
         focus = self.cells_view.get_focus_child()
