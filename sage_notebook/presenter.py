@@ -109,11 +109,45 @@ class Presenter(object):
         self.view.notebook_window.set_worksheet(self.model.worksheet)
         self.view.notebook_window.cell_grab_focus(cell)
 
-    def auto_complete(self, text, cursor, callback):
+    def code_complete_init(self, input_string, cursor_pos, cell_id, label=None):
         """
-        Call back with suggestions for auto-completion.
+        Initiate auto-completion.
+        
+        After the completions are found, the
+        :meth:`code_complete_finished` method is called
+        asynchronously.
+
+        INPUT:
+
+        - ``input_string`` -- string. The input to auto-complete
+
+        - ``cursor_pos`` -- integer. The cursor position
+
+        - ``cell_id`` -- the ID of the cell whose input is auto-completed
+
+        - ``label`` -- anything JSON-serializable to uniquely specify
+          the completion attempt.
         """
-        pass
+        self.model.code_complete_init(input_string, cursor_pos, cell_id, label)
+
+    def code_complete_finished(self, completion):
+        """
+        Callback with suggestions for code completion.
+
+        There is no guarantee that this callback is called. For
+        example, if the compute server is busy then code complete
+        requests are ignored.
+
+        INPUT:
+
+        - ``completion`` -- a
+          :class:`~sage_notebook.code_complete.CodeCompletion`
+          instance. The code completion for the request initiated with
+          :meth:`code_complete_init`.
+        """
+        cell = self.model.get_cell(completion.request.cell_id)
+        self.model.code_complete_finished(cell, completion)
+        self.view.notebook_window.code_complete_finished(cell, completion)
 
     def show_notebook_window_worksheet(self):
         """

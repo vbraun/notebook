@@ -44,7 +44,10 @@ class ComputeServiceClient(MonitorClient):
         """
         RPC callback when the compute server crashed
         """
-        self.service._impl_sage_eval_crash(self, label)
+        self.service._impl_sage_eval_crash(label)
+
+    def _impl_code_completion_finished(self, base, completions, label):
+        self.service._impl_code_completion_finished(base, completions, label)
 
 
 
@@ -103,6 +106,7 @@ class ComputeService(object):
     def __init__(self, presenter):
         self.presenter = presenter
         self.queue = Queue()
+        self.pending_completions = []
         self.start_client()
         from sage.rpc.core.logging_origin import logger
         logger.setLevel(logging.DEBUG)
@@ -168,6 +172,10 @@ class ComputeService(object):
         import sys
         from subprocess import Popen
         return Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+
+    ####################################################
+    #
+    #  Evaluation of cells
 
     def eval(self, cell):
         """
@@ -238,4 +246,34 @@ class ComputeService(object):
         if next_cell is not None:
             self._client.sage_eval(next_cell.input, next_cell.id)
         
+    ####################################################
+    #
+    #  Autocomplete
 
+    def code_complete(self, request):
+        """
+        Initiate auto-completion
+
+        INPUT:
+
+        - ``request`` -- a
+          :class:`~sage_notebook.code_complete.Request` instance. The
+          code completion request.
+        """
+        if not self.queue.is_empty():
+            return
+        self.pending_completions.append(request)
+        self._client.code_complete(request.string, request.pos, request.label)
+        
+    def _impl_code_completion_finished(self, base, completions, label):
+        """
+        Callback when autocomplete is finished
+        """
+        while True:
+            if len(self.pending_completions) == 0:
+                raise RuntimeError('received code completion without outstanding request')
+            request = self.pending_completions.pop(0)
+            if request.label == label:
+                break
+        completion = request.complete(base, completions)
+        self.presenter.code_complete_finished(completion)

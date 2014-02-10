@@ -265,9 +265,10 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         key_cb = self.on_notebook_cell_key_press_event
         focus_in_cb = self.on_notebook_cell_focus_in_event
         focus_out_cb = self.on_notebook_cell_focus_out_event
+        complete_cb = self.on_notebook_cell_code_complete
         missing = n_cells - len(model)
         for i in range(missing):
-            c = CellWidget(key_cb, focus_in_cb, focus_out_cb)
+            c = CellWidget(key_cb, focus_in_cb, focus_out_cb, complete_cb)
             model.append(c)
             view.pack_start(c, expand, fill, 0)
             self._add_spacer()
@@ -429,6 +430,18 @@ class NotebookWindowGtk(NotebookWindowABC, WindowGtk):
         cursor.forward_chars(x)
         buf.place_cursor(cursor)
         return True
+
+    #def on_notebook_cell_code_complete(self, input_string, cursor_pos, cell_id, context):    
+    #    super(NotebookWindowGtk, self).on_notebook_cell_code_complete(
+    #        input_string, cursor_pos, cell_id, context)
+        
+    def code_complete_finished(self, cell, completion):
+        """
+        Update the view to display completions
+        """
+        widget = self.cells_model.find(cell)
+        c = completion
+        widget.show_code_completions(c.base, c.completions, c.request.label)
 
     def on_notebook_window_delete_event(self, widget, data=None):
         self.presenter.hide_notebook_window()

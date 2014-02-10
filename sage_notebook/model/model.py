@@ -127,3 +127,19 @@ class Model:
         Evaluation finished
         """
         pass
+
+    # autocompletion
+
+    def code_complete_init(self, input_string, cursor_pos, cell_id, label):
+        """
+        Initiate auto-completion.
+        """
+        from .code_completion import Request
+        request = Request(input_string, cursor_pos, cell_id, label)
+        self.compute.code_complete(request)
+
+    def code_complete_finished(self, cell, completion):
+        """
+        Callback with suggestions for auto-completion.
+        """
+        pass

@@ -29,7 +29,10 @@ class NotebookWindowABC(WindowABC):
 
     def on_notebook_evaluate_cell(self, cell_id, input_string):
         """
-        Callback to use for cell evaluation request (like Ctrl-Enter)
+        Initiate cell evaluation request.
+
+        This method is designed to be used in a callback
+        (e.g. response to Ctrl-Enter)
         """
         self.presenter.evaluate_cell_init(cell_id, input_string)
 
@@ -65,5 +68,17 @@ class NotebookWindowABC(WindowABC):
     def cell_grab_focus(self, cell):
         """
         Focus cell and put cursor into the cell's input field
+        """
+        raise NotImplementedError
+
+    def on_notebook_cell_code_complete(self, input_string, cursor_pos, cell_id, label=None):
+        """
+        Initiate auto complete
+        """
+        self.presenter.code_complete_init(input_string, cursor_pos, cell_id, label)
+
+    def code_complete_finished(self, cell, completion):
+        """
+        Update the view to display completions
         """
         raise NotImplementedError

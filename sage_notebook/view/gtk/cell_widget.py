@@ -155,10 +155,12 @@ class CellWidget(Gtk.Grid):
 
     def __init__(self, key_press_event_callback, 
                  focus_in_event_callback, focus_out_event_callback,
+                 code_complete_callback,
                  *args, **kwds):
         self._key_press_event_callback = key_press_event_callback
         self._focus_in_event_callback = focus_in_event_callback
         self._focus_out_event_callback = focus_out_event_callback
+        self._code_complete_callback = code_complete_callback
         super(CellWidget, self).__init__(*args, **kwds)
         self.set_row_homogeneous(False)
         self.set_column_homogeneous(False)
@@ -192,8 +194,8 @@ class CellWidget(Gtk.Grid):
             self.out_label.show()
 
     def _make_input(self):
-        label = self.in_label = CellLabelWidget()
-        view = self.in_view = GtkSource.View()
+        self.in_label = label = CellLabelWidget()
+        self.in_view = view = GtkSource.View()
         view.connect("key-press-event", self.on_key_press_event)
         view.connect("focus-in-event", self._focus_in_event_callback)
         view.connect("focus-out-event", self._focus_out_event_callback)
@@ -206,8 +208,9 @@ class CellWidget(Gtk.Grid):
         self.set_language()
         view.set_hexpand(True)
         view.set_vexpand(False)
-        completion = self.completion = view.get_completion()
-        completion.add_provider(SageCompletionProvider())
+        self.completion_provider = provider = SageCompletionProvider(self)
+        self.completion = completion = view.get_completion()
+        completion.add_provider(provider)
         #completion.set_property('auto-complete-delay', 2000)
         self._completion_is_visible = False
         completion.connect('show', self.on_completion_show_event)
@@ -219,6 +222,19 @@ class CellWidget(Gtk.Grid):
 
     def on_completion_hide_event(self, completion):
         self._completion_is_visible = False
+
+    def on_populate_code_completion(self, input_text, cursor_pos, label=None):
+        """
+        Callback to start populate code completions
+        """
+        print('on_populate_context', label)        
+        self._code_complete_callback(input_text, cursor_pos, self._id, label)
+
+    def show_code_completions(self, base, completions, label):
+        """
+        Called with the result of the code completion
+        """
+        self.completion_provider.populate_finish(base, completions, label)
 
     def on_key_press_event(self, widget, event):
         if self._completion_is_visible and \
