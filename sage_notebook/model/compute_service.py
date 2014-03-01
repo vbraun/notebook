@@ -7,7 +7,7 @@ logger = logging.getLogger('GUI')
 
 from sage.rpc.core.transport import TransportListen
 from sage.rpc.core.monitor import MonitorClient
-
+from sage.rpc.core.decorator import remote_callable
 
 
 class ComputeServiceClient(MonitorClient):
@@ -16,36 +16,42 @@ class ComputeServiceClient(MonitorClient):
         super(ComputeServiceClient, self).__init__(*args, **kwds)
         self.service = service
 
+    @remote_callable('sage_eval.stdin')
     def _impl_sage_eval_stdin(self, label):
         """
         RPC callback when evaluation requests stdin
         """
         self.service._impl_sage_eval_stdin(label)
 
+    @remote_callable('sage_eval.stdout')
     def _impl_sage_eval_stdout(self, stdout, label):
         """
         RPC callback when evaluation produces stdout
         """
         self.service._impl_sage_eval_stdout(stdout, label)
 
+    @remote_callable('sage_eval.stderr')
     def _impl_sage_eval_stderr(self, stderr, label):
         """
         RPC callback when evaluation produces stderr
         """
         self.service._impl_sage_eval_stderr(stderr, label)
 
+    @remote_callable('sage_eval.result')
     def _impl_sage_eval_result(self, cpu_time, wall_time, label):
         """
         RPC callback when evaluation is finished
         """
         self.service._impl_sage_eval_result(cpu_time, wall_time, label)
 
+    @remote_callable('sage_eval.crash')
     def _impl_sage_eval_crash(self, label):
         """
         RPC callback when the compute server crashed
         """
         self.service._impl_sage_eval_crash(label)
 
+    @remote_callable('code_completion.finished')
     def _impl_code_completion_finished(self, base, completions, label):
         self.service._impl_code_completion_finished(base, completions, label)
 
