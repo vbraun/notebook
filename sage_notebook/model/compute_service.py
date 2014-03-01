@@ -134,10 +134,6 @@ class ComputeService(object):
         #    self._inputhook()
         #    time.sleep(0.01)
         
-    def restart_client(self):
-        self._eval_counter = 0
-        raise NotImplementedError
-
     @property
     def rpc_client(self):
         return self._client
@@ -247,7 +243,7 @@ class ComputeService(object):
         self.queue.pop()
         self.presenter.on_evaluate_cell_finished(cell_id, cell)
         logger.warning('crashed')
-        self.restart_client()
+        self._eval_counter = 0
         next_cell = self.queue.current_cell
         if next_cell is not None:
             self._client.sage_eval(next_cell.input, next_cell.id)
